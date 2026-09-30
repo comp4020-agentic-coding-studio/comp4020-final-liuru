@@ -138,10 +138,7 @@ export function renderWall(traces: Trace[], visitorId: string): string {
 
 export function renderReadme(bodyHtml: string): string {
   const body = `
-    <header>
-      <h1>About this app</h1>
-      <nav class="meta"><a href="/">back to the wall</a></nav>
-    </header>
+    <nav class="meta"><a href="/">back to the wall</a></nav>
     <main>${bodyHtml}</main>
   `;
   return shell("About — 六如", body);
