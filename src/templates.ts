@@ -85,6 +85,7 @@ const shell = (title: string, body: string): string => `<!doctype html>
       }
       li.trace.mine { background: #8883; opacity: 1; }
       li.trace .glyph { font-size: 1.1rem; text-align: center; }
+      li.trace .text { overflow-wrap: anywhere; min-width: 0; }
       li.trace .when { font-size: 0.75rem; color: light-dark(#595959, #999); white-space: nowrap; }
       .empty { color: light-dark(#595959, #999); font-style: italic; }
       pre.readme-body { white-space: pre-wrap; }
@@ -120,18 +121,20 @@ export function renderWall(traces: Trace[], visitorId: string): string {
       <p class="sub">leave a thought as one of the six as-ifs; it stays here, quietly, whether or not you come back</p>
       <nav class="meta"><a href="/readme/">what this is for</a></nav>
     </header>
-    <form class="trace-form" method="post" action="/trace">
-      <label>this feels like&hellip;
-        <select name="kind" required>${options}</select>
-      </label>
-      <label>what passed through
-        <input type="text" name="text" maxlength="240" required placeholder="a fragment, not an essay" />
-      </label>
-      <button type="submit">let it go</button>
-    </form>
-    <ul class="wall">
-      ${items}
-    </ul>
+    <main>
+      <form class="trace-form" method="post" action="/trace">
+        <label>this feels like&hellip;
+          <select name="kind" required>${options}</select>
+        </label>
+        <label>what passed through
+          <input type="text" name="text" maxlength="240" required placeholder="a fragment, not an essay" />
+        </label>
+        <button type="submit">let it go</button>
+      </form>
+      <ul class="wall">
+        ${items}
+      </ul>
+    </main>
   `;
   return shell("六如 — a wall for passing things", body);
 }
