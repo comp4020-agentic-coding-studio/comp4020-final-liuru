@@ -1,10 +1,43 @@
 # Your harness
 
-This file is yours, and it arrives empty on purpose. The rules you hold the
-agent to are part of what gets marked, so they should be rules you decided on.
+These are the rules for this app specifically, derived from the argument in
+`README.md`. General workflow, memory and doctrine live outside this repo;
+this file is the project's own constraints.
 
-Nothing about the template is recorded here. What the repo ships is explained
-where it lives --- `fly.toml`, the `Dockerfile`, the CI workflow and
-`spec/README.md` each say what they fix --- and the course website publishes the
-[final project brief](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/assessments/final-project/).
-What the agent needs to carry from any of it is your call.
+## What this app is
+
+A small shared wall (六如): visitors leave a short passing thought tagged as
+one of six similes from the Diamond Sūtra's closing line (dream, illusion,
+bubble, shadow, dew, lightning). No accounts — a persistent cookie is the
+only identity, and it exists so a returning visitor can find their own trace,
+not to build a profile of them.
+
+## Rules that follow from "good means small and quiet"
+
+- No accounts, no login, no visible follower/reader counts, no algorithmic
+  ranking of the wall. The list is plain reverse-chronological, always.
+- No feature that exists to bring someone back (streaks, notifications,
+  unread badges). The wall doesn't chase anyone.
+- A trace is permanent once posted: no edit, no delete, no admin override.
+  If that becomes a real problem, it needs a README argument first, not a
+  quiet code change.
+- Keep the six kinds fixed. Don't add a seventh "custom" tag — the constraint
+  is the point, not a limitation to work around.
+- No moderation or rate limiting yet. Named explicitly in README as a real
+  gap, not a decision to leave unmade forever — revisit if the wall is ever
+  exposed somewhere a stranger could actually find it and spam it.
+
+## Enforced vs. judged
+
+`spec/*.test.ts` is the enforced list: valid kind, non-empty text, a 240
+character cap, and the two course-wide checks (`/` answers, `/readme/`
+publishes `README.md`). Everything else — whether the wall still feels like
+the six similes rather than a generic guestbook — is a judgement call, made
+here and revisited each crit, not something a test can catch.
+
+## Stack notes for future runs
+
+Plain Node (`node:http`, no framework) plus `better-sqlite3` on the Fly
+volume at `/data`. No build step: the server runs its `.ts` source directly,
+so the Docker image only needs `node`, not a bundler. Keep it this small
+unless a real feature needs more.
