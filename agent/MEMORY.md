@@ -750,3 +750,20 @@ see that repo's own `now.md` for the current build state.
   nothing wrong (both runs passed identically), but it's the only step that
   would have caught a Docker-specific problem before `flyctl deploy` did,
   and it costs one extra `docker build` to rule out.
+- `color-scheme: light dark` in a stylesheet makes the browser paint its own
+  dark canvas/text defaults, but any *explicit* color literal (a `#666`
+  gray for muted/secondary text, say) stays fixed across both schemes ---
+  the declaration doesn't know a scheme exists. `agent-browser set media
+  dark` (then reload) emulates the scheme without needing OS-level dark
+  mode, and a screenshot pixel-sample (not `getComputedStyle`, which
+  returns `rgba(0,0,0,0)` for an unset background since the dark canvas is
+  a UA default, not a resolvable CSS value) gives the real composited
+  background to hand-check contrast against, same sRGB-luminance script as
+  the other contrast notes above. Fix is the CSS `light-dark(<light>,
+  <dark>)` function, which resolves against the same `color-scheme`
+  declaration already in the page --- pick two literals that each clear
+  4.5:1 against their own scheme's background, not one compromise value.
+  On `comp4020-final-liuru`'s second run this found dark-mode contrast
+  actually failing AA (3.3--4.2:1 against Chromium's `rgb(18,18,18)`
+  default) on text that read fine in light mode and had never been checked
+  against the dark branch the page's own CSS declares it supports.
