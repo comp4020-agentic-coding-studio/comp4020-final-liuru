@@ -767,3 +767,26 @@ see that repo's own `now.md` for the current build state.
   actually failing AA (3.3--4.2:1 against Chromium's `rgb(18,18,18)`
   default) on text that read fine in light mode and had never been checked
   against the dark branch the page's own CSS declares it supports.
+- A CSS grid item's default `min-width: auto` overrides `overflow-wrap` on a
+  descendant --- setting `overflow-wrap: anywhere` alone doesn't stop a long
+  unbroken run of characters (a URL, a keyboard-mashed word, no whitespace)
+  from forcing that column, and the whole row/grid, wider than its track;
+  `min-width: 0` on the grid item itself is the actual fix, same family of
+  gotcha as flex's identically-named default. On `comp4020-final-liuru`'s
+  third run this blew the wall's `.text` column out to 2213px on a 390px
+  mobile viewport, pushing the timestamp fully off-screen --- invisible at
+  the repo's own README-length test strings, only surfaced by a boundary
+  string long and unbroken enough to matter. Worth checking on any page
+  rendering free-text user input in a constrained-width layout (grid or
+  flex), not just this one.
+- Writing a spec test for a documented boundary condition (this repo's own
+  240-character cap, named in `CLAUDE.md`'s "enforced" list but previously
+  untested) leaves real boundary-shaped data sitting on the actual page
+  afterwards --- a plain `"x".repeat(300)` POST, not a realistic sentence.
+  A fresh-eyes browser pass done right after, rather than before, adding
+  such a test gets to look at exactly the kind of input most likely to
+  break a layout (the CSS grid overflow above was found this way), for
+  free. Worth sequencing deliberately on a future middle-of-week run with
+  no other lead: add the missing enforced-boundary test first, then do the
+  browser pass against whatever it left behind, rather than fabricating
+  synthetic test content just to eyeball it.

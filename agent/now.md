@@ -1,63 +1,66 @@
 # Hand-off
 
-## comp4020-final-liuru: second run --- still crit 8, deepening not re-scoping
+## comp4020-final-liuru: third run --- still crit 8, deepening again
 
-Same crit source as the first run
+Same crit source as the first two runs
 ([`crits/08-its-alive.json`](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/api/crits/08-its-alive.json)),
-fetched again and unchanged --- confirms the first run's hand-off guess was
-wrong: the prompt doesn't switch to crit 9 the moment crit 8's finishing
-steps are done. The week rule ("open for its final 168 hours... deepen it
-in the middle") governs even after a run has already shipped a complete
-pass; 159.5h to cutoff meant this was a middle-of-the-week run, not a
-finishing one, so the job was to deepen what's there, not start crit 9's
-real-time layer (still explicitly out of scope per this repo's own
-`CLAUDE.md` and the brief).
+fetched again and unchanged. 148.5h to cutoff, so still a middle-of-week
+run per the week rule --- deepened again rather than starting crit 9's
+real-time layer (still out of scope per this repo's own `CLAUDE.md` and
+the brief).
 
-**What "deepen" meant this run, concretely:** the app's own narrow bar
-(deploy, core thing works, trace persists) was already met, so I did a real
-fresh-eyes browser pass on the live app rather than re-verifying prior
-work, per the standing lesson that only driving the actual rendered page
-catches what `pnpm check` can't. Found two real, previously-unflagged bugs:
+**What this run found and fixed**, via the pattern the second run's
+hand-off recommended (a fresh axe-core pass plus a boundary-condition
+spec test, then look at what that test left on the page):
 
-1. **Dark-mode contrast.** `templates.ts` sets `color-scheme: light dark`
-   but `.sub`/`.when`/`.empty` used fixed `#666`/`#777` literals that don't
-   adapt. Measured via a live screenshot pixel-sample against the browser's
-   own dark canvas (`rgb(18,18,18)`, confirmed with `agent-browser --set
-   media dark`) rather than assumed: contrast came out 3.3--4.2:1, below
-   WCAG AA's 4.5:1. Fixed with `light-dark(#595959, #999)` --- 7.0:1 light,
-   6.6:1 dark, both computed by hand with the sRGB-luminance script this
-   memory already documents. (`c628797`)
-2. **Duplicate H1 on `/readme/`.** The page chrome wrapped the parsed
-   README in its own `<h1>About this app</h1>`, but README.md's own first
-   line renders as *its own* `<h1>`, nested inside --- two H1s on one page,
-   with the README's real H2s structurally orphaned under the wrong
-   heading. Caught only by reading the actual rendered heading sequence
-   (`querySelectorAll('h1,h2,...')`), not by `pnpm check` --- nothing in the
-   suite asserts heading order, same gap the memory's `heading-order` note
-   already names. Fixed by dropping the chrome's own H1 and letting the
-   README's own H1 stand as the page title. (`d54402b`)
+1. **Missing enforced-boundary test.** `CLAUDE.md` names the 240-character
+   text cap as part of the "enforced" list, but `spec/trace.test.ts` never
+   actually tested it. Added a test that posts an over-length string and
+   checks the served page contains exactly the first 240 characters, not
+   more. (`51e7a8f`)
+2. **Missing `<main>` landmark on the wall page.** `renderReadme` wraps its
+   body in `<main>`; `renderWall` didn't. A fresh axe-core injection (CDN
+   `axe.min.js` technique, documented in `MEMORY.md`) against `/` found two
+   real violations (`landmark-one-main`, `region`) that a static a11y pass
+   done once before hadn't caught because nobody had re-run axe against
+   this specific page since the H1 fix two runs ago. Fixed by wrapping the
+   form and `ul.wall` in `<main>`; `/readme/` was already clean.
+3. **Long unbroken text blows out mobile layout.** The new boundary test's
+   own 300-character `x`-repeat POST, screenshotted at the 390×844 marking
+   viewport, showed the trace list's `.when` (relative-time) column pushed
+   fully off-screen --- `document.documentElement.scrollWidth` came back
+   2213px against a 390px viewport. Root cause: `li.trace`'s CSS grid had
+   no `min-width: 0` on the `.text` column, so its default `min-width: auto`
+   overrode the fact that nothing was even setting `overflow-wrap` yet.
+   Fixed with `overflow-wrap: anywhere; min-width: 0` on `li.trace .text`.
+   Confirmed `scrollWidth` back to exactly 390px after. (`051ec4d`)
 
-Both verified the same way as the first run's deploy: `sudo -n docker
-build`/`run --tmpfs /data` (CI's own invocation), `pnpm check` against that
-real image (not just the dev server), then `agent-browser` at both marking
-viewports plus a dark-mode emulation pass, console/errors clean, then
-pushed and `flyctl deploy --remote-only --ha=false -a comp4020-final-liuru`
-(repo still private, so still mine to run), then re-verified against the
-live URL specifically (heading count, computed color, console) rather than
-trusting the local build. A stray trace from an earlier verification pass
-("proof of life, week 9") is still the only real content on the wall and
-survived both redeploys, confirming the volume persists across deploys as
-expected.
+Verified the same way as the prior two runs: `sudo -n docker build`/`run
+--tmpfs /data` (CI's own invocation), `pnpm check` against that real image,
+then pushed and `flyctl deploy --remote-only --ha=false -a
+comp4020-final-liuru` (repo still private), then re-verified against the
+live URL specifically --- `<main>` present, mobile screenshot clean,
+`scrollWidth` matching viewport, console/errors clean, and `pnpm check`
+re-run with `APP_URL` pointed at the live app. The wall now carries three
+traces (the original "proof of life, week 9" trace plus the two spec-test
+traces this run's own `pnpm check` runs left behind), confirming the
+volume survived a third redeploy.
 
 ## The single most important next action
 
-No open defect --- the wall is live, correct in both color schemes, and its
-`/readme/` has a clean heading outline. The next *real* content change
-(the real-time layer, a documented multi-user decision) is crit 9's job,
-not something to start speculatively; re-fetch whatever crit JSON the next
-run's prompt actually names rather than assuming it's crit 9 by number.
-Given this run showed a fresh browser pass on an "already shipped" page
-still finds real bugs, a future middle-of-the-week run with no new brief
-should default to another such pass (a different page/viewport/scheme
-combination, or an axe-core run via the CDN-injection technique already
-documented) before assuming there's nothing left to deepen.
+No open defect. The next *real* content change (the real-time layer, a
+documented multi-user decision) is crit 9's job --- re-fetch whatever crit
+JSON the next run's prompt actually names rather than assuming it's crit 9
+by number, same caution as the last two hand-offs.
+
+Three fresh-eyes passes in a row have each found a real, previously-
+unflagged bug (dark-mode contrast, duplicate H1, missing `<main>` landmark
+plus a grid-overflow layout bug) by actually looking at the rendered page
+rather than re-verifying prior fixes. A future middle-of-week run with no
+new brief should keep defaulting to this rather than assuming there's
+nothing left: pick a check not yet done (axe-core against a scheme/
+viewport combination not yet tried, a keyboard-only pass through the form,
+a second fresh read of README.md's claims against current source) before
+concluding the deepen pass has nothing to do. If a pass genuinely turns up
+nothing for two runs in a row, that's the point to say so plainly rather
+than manufacturing busywork.
