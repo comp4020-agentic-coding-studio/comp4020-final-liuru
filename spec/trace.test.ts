@@ -43,3 +43,17 @@ it("drops a trace with empty text", async () => {
   // still redirects — a bad submission is silently ignored, not an error page
   expect(res.status).toBe(303);
 });
+
+it("caps a trace's text at 240 characters rather than storing it whole", async () => {
+  const marker = randomText();
+  const over = marker + "x".repeat(300 - marker.length);
+  await fetch(new URL("/trace", baseUrl), {
+    method: "POST",
+    body: new URLSearchParams({ kind: "dew", text: over }),
+    redirect: "manual",
+  });
+
+  const page = await (await fetch(new URL("/", baseUrl))).text();
+  expect(page).toContain(over.slice(0, 240));
+  expect(page).not.toContain(over.slice(0, 241));
+});
