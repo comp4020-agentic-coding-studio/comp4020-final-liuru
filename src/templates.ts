@@ -46,7 +46,7 @@ const shell = (title: string, body: string): string => `<!doctype html>
       }
       header { margin-bottom: 1.5rem; }
       h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
-      .sub { color: #666; margin-top: 0; font-size: 0.95rem; }
+      .sub { color: light-dark(#595959, #999); margin-top: 0; font-size: 0.95rem; }
       nav.meta a { color: inherit; }
       form.trace-form {
         display: grid;
@@ -85,8 +85,8 @@ const shell = (title: string, body: string): string => `<!doctype html>
       }
       li.trace.mine { background: #8883; opacity: 1; }
       li.trace .glyph { font-size: 1.1rem; text-align: center; }
-      li.trace .when { font-size: 0.75rem; color: #777; white-space: nowrap; }
-      .empty { color: #777; font-style: italic; }
+      li.trace .when { font-size: 0.75rem; color: light-dark(#595959, #999); white-space: nowrap; }
+      .empty { color: light-dark(#595959, #999); font-style: italic; }
       pre.readme-body { white-space: pre-wrap; }
     </style>
   </head>
