@@ -119,7 +119,8 @@ export function renderWall(traces: Trace[], visitorId: string): string {
           const isMine = t.visitorId === visitorId;
           const mineLabel = isMine ? `<span class="visually-hidden">yours: </span>` : "";
           return `<li class="trace kind-${t.kind}${isMine ? " mine" : ""}">
-            <span class="glyph" title="${meta.hanzi} ${escapeHtml(meta.label)}">${meta.glyph}</span>
+            <span class="glyph" aria-hidden="true" title="${meta.hanzi} ${escapeHtml(meta.label)}">${meta.glyph}</span>
+            <span class="visually-hidden">tagged as ${escapeHtml(meta.label)}: </span>
             <span class="text">${mineLabel}${escapeHtml(t.text)}</span>
             <span class="when">${relativeTime(t.createdAt)}</span>
           </li>`;
