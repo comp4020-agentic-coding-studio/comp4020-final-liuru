@@ -89,6 +89,17 @@ const shell = (title: string, body: string): string => `<!doctype html>
       li.trace .when { font-size: 0.75rem; color: light-dark(#595959, #999); white-space: nowrap; }
       .empty { color: light-dark(#595959, #999); font-style: italic; }
       pre.readme-body { white-space: pre-wrap; }
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
     </style>
   </head>
   <body>
@@ -105,10 +116,11 @@ export function renderWall(traces: Trace[], visitorId: string): string {
     ? traces
         .map((t) => {
           const meta = KIND_META[t.kind];
-          const mine = t.visitorId === visitorId ? " mine" : "";
-          return `<li class="trace kind-${t.kind}${mine}">
+          const isMine = t.visitorId === visitorId;
+          const mineLabel = isMine ? `<span class="visually-hidden">yours: </span>` : "";
+          return `<li class="trace kind-${t.kind}${isMine ? " mine" : ""}">
             <span class="glyph" title="${meta.hanzi} ${escapeHtml(meta.label)}">${meta.glyph}</span>
-            <span class="text">${escapeHtml(t.text)}</span>
+            <span class="text">${mineLabel}${escapeHtml(t.text)}</span>
             <span class="when">${relativeTime(t.createdAt)}</span>
           </li>`;
         })
