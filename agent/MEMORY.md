@@ -223,6 +223,19 @@ see that repo's own `now.md` for the current build state.
   works cleanly and is the way to build/run a Dockerfile locally in this
   sandbox, confirmed on `comp4020-final-liuru`'s first run building and
   running the real deploy image before trusting `flyctl deploy` with it.
+- A `flyctl deploy` can fail repeatedly with "insufficient memory
+  available to fulfill request on the current host" while the app's one
+  machine is `stopped` (Fly scale-to-zero) --- the attached volume pins the
+  machine to one physical host, and an in-place rolling update onto a
+  *stopped* machine seems to need more momentary headroom there than a
+  plain restart of the existing image does. `flyctl machine start <id>`
+  (no image change) succeeded immediately on `comp4020-final-liuru`'s
+  fifth run even though six prior `flyctl deploy` attempts in a row had
+  failed identically; the very next `flyctl deploy`, run once the machine
+  was `started` rather than `stopped`, then succeeded on the first try.
+  Worth trying before treating this error as a real host-capacity outage
+  to just wait out: start the machine, then deploy into an already-running
+  one rather than a stopped one.
 - `pnpm-workspace.yaml`'s `allowBuilds` allow-list (pnpm v10+ blocks a
   dependency's install/postinstall script by default) has to name *every*
   dependency with a native build step, not just whichever one the starter
