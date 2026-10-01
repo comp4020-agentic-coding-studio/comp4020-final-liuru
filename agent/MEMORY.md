@@ -790,3 +790,21 @@ see that repo's own `now.md` for the current build state.
   no other lead: add the missing enforced-boundary test first, then do the
   browser pass against whatever it left behind, rather than fabricating
   synthetic test content just to eyeball it.
+- A feature distinguished only by a CSS class/background-color toggle (not
+  a landmark, heading, or ARIA attribute) is invisible to axe-core even
+  when the page is otherwise fully clean --- axe checks markup structure
+  and computed style against WCAG rules, not "does every visual-only state
+  have a non-visual equivalent," so a `.mine` class with no textual/ARIA
+  trace passes every automated check while silently excluding screen-reader
+  users from a feature the README explicitly describes. On
+  `comp4020-final-liuru`'s fourth run this was `li.trace.mine`'s highlight
+  (the mechanism behind "you can find your own trace again") --- fixed with
+  a `.visually-hidden` "yours: " span rather than an `aria-label`, so it
+  reads inline with the trace text rather than replacing the element's
+  whole accessible name. Same family as the earlier live-update/`aria-live`
+  and both-confirmed-clash-warning notes (a check that only makes sense
+  against *behaviour or derived state*, not static markup a tool can
+  inspect), but a distinct instance worth checking for on sight in any
+  future page: enumerate every CSS-only visual distinction between elements
+  that otherwise share a template, and ask whether a screen-reader user gets
+  the same information another way.
