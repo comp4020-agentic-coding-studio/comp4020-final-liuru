@@ -1,86 +1,78 @@
 # Hand-off
 
-## comp4020-final-liuru: eighth run --- the README-vs-source check the seventh run left undone
+## comp4020-final-liuru: ninth run --- CLAUDE.md's own rules + spec/README.md, the two remaining fresh-check options
 
-Same crit source as all eight runs now
+Same crit source as all nine runs now
 ([`crits/08-its-alive.json`](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/api/crits/08-its-alive.json)),
-fetched again and unchanged. 111.5h to cutoff, still a middle-of-week run
---- the prompt did not call this run the last one, so nothing was finished
-or started fresh; `PROCESS.md` and `reflections/crit-8.md` stay untouched,
-same as doctrine says. Working tree was clean before and after; no code
-change was needed, so no commit.
+fetched again and unchanged. 100.5h to cutoff, still a middle-of-week run
+--- the prompt did not call this run the last one, so `PROCESS.md` and
+`reflections/crit-8.md` stay untouched, same as every prior run. Working
+tree was clean before and after; no code change was needed, so no commit.
 
-**What this run did:** the seventh run's hand-off named one specific gap it
-deliberately skipped --- reading `README.md`'s own claims line by line
-against current `src/`, the way the `comp4020-crit7-liuru` README-drift
-lesson in `MEMORY.md` describes. Did that fresh, claim by claim:
+**What this run did:** the eighth run's hand-off left two options
+unexplored before resorting to a fourth variant of "read and confirm
+consistency." Did both:
 
-- "plain reverse-chronological... oldest at the bottom" against
-  `db.ts`'s `ORDER BY id DESC` --- consistent (DESC puts the newest id
-  first in the rendered list, so the oldest visible trace sits at the
-  bottom; this isn't the bug-shaped reading it first looks like).
-- "the server silently drops it rather than storing garbage" against
-  `server.ts`'s `if (isKind(kind) && text.length > 0) addTrace(...)` with
-  no `else` --- matches exactly, and `spec/trace.test.ts` exercises both
-  the bad-kind and empty-text paths over real HTTP.
-- "capped at 240 characters" against both the server's
-  `.slice(0, 240)` and the form's `maxlength="240"` --- matches, and is
-  the one claim with its own boundary test (`51e7a8f`).
-- "no names, colours, or avatars... yours vs everyone else's" against
-  `templates.ts`'s `KIND_META`/`.mine` class --- matches; the only
-  per-visitor distinction is the background tint plus the
-  `visually-hidden` "yours: " span, no colour-per-person scheme.
-- "no real-time... no server-side logging... no moderation" against
-  `server.ts` --- matches, nothing resembling any of the three exists.
-- "traces persist in SQLite on the app's own volume" against `db.ts`'s
-  `DATA_DIR`/WAL pragma --- matches, consistent with `fly.toml`'s volume
-  mount already re-checked on the seventh run.
+1. Re-read `CLAUDE.md`'s "rules that follow from good means small and
+   quiet" list against current `src/` line by line (distinct from the
+   README check the eighth run did --- the two documents say similar things
+   but aren't the same text). All five hold: no accounts/login/counts/
+   ranking (confirmed against `server.ts`/`templates.ts`, nothing of the
+   kind exists); plain reverse-chronological (`db.ts`'s `ORDER BY id DESC`
+   + `templates.ts` rendering traces in that order, newest first = oldest
+   at the bottom, same as the eighth run's README check already found);
+   no streak/notification features (none exist); traces permanent, no
+   edit/delete/admin route (confirmed --- only `GET /`, `POST /trace`,
+   `GET /readme/` exist in `server.ts`); six kinds fixed, no seventh
+   (`KINDS` in `db.ts` is the same six, `isKind` is the only gate).
+2. Re-read `spec/README.md` against `spec/trace.test.ts` and
+   `spec/invariants.test.ts` as those files currently stand. Its claims
+   ("the two things the course relies on", "everything else in `spec/` is
+   yours", "the specs for crits 8, 9 and 10... run in this repo") all still
+   match: `invariants.test.ts` checks exactly `/` and `/readme/`, nothing
+   more; `trace.test.ts` is the "yours to write" layer on top, matching
+   the file's own header comment about what it covers. No drift.
 
-No drift found --- a genuinely clean result, not a skipped check. Also
-re-ran the full verification chain one more time rather than trusting the
-seventh run's version-9 deployment claim to still hold: started
-`src/server.ts` locally against a throwaway `/tmp` `DATA_DIR`, ran
-`pnpm check` against it (6/6 tests, clean typecheck), shut the server down
-and confirmed nothing was left listening on 8080, then `curl`'d the live
-`https://comp4020-final-liuru.fly.dev/` and `/readme/` directly and got
-200 on both without redeploying anything.
+Also re-ran the full verification chain again rather than trusting the
+eighth run's version to still hold: local server against a throwaway
+`/tmp` `DATA_DIR` (`pnpm check`, 6/6 tests, clean typecheck), confirmed
+the process actually stopped and the port freed after `kill` (first
+`pkill` attempt exited 144 without actually stopping it --- had to `kill`
+the PID directly and re-check `ss -ltnp`, worth remembering: `pkill -f` on
+a command line containing `DATA_DIR=...` as an env-var prefix doesn't
+reliably match here, use the PID), then `curl`'d the live
+`https://comp4020-final-liuru.fly.dev/` and `/readme/` directly: 200 on
+both, no redeploy.
 
-**Why this matters for future runs:** this is the third distinct
-verification category (after display-layer a11y/screenshots on runs 1--6,
-and infra-config/load-testing on run 7) to come back clean on this small
-an app. That's a real signal, not an excuse to stop checking --- but it
-does mean a ninth run with no fresh lead should not reach for a fourth
-variant of "read things and confirm they're consistent" against a repo
-that hasn't changed. If nothing else surfaces, the honest move is a short,
-explicitly-labelled clean-pass note like this one, not inventing a
-defect to have something to fix.
+**Why this matters for future runs:** that's now five independent
+verification categories clean against an unchanged repo (display-layer
+a11y/screenshots, infra-config/load-testing, README-vs-source,
+CLAUDE.md-vs-source, spec/README.md-vs-spec-files). The eighth run's own
+"don't reach for a fourth variant" caution was right, and now applies
+doubly: there is no sixth category of "read two documents and confirm
+they agree" left to invent that wouldn't be busywork. A tenth run with no
+fresh lead should not manufacture a sixth variant of this same pattern.
 
 ## The single most important next action
 
-No open defect, and now three independent verification passes (a11y/
-display, infra/load, README-accuracy) all clean against the current
-`main` (`f52e1e5`). Still no live/real-time layer, no server-side logging
-beyond Fly's defaults, no moderation --- crit 9/11's job, not gaps to close
-early. Re-fetch whatever crit JSON the next run's prompt actually names
-rather than assuming it's crit 9 by number, same caution as the last seven
-hand-offs.
+No open defect. Five independent verification passes all clean against
+current `main` (`d126c9a`). Still no live/real-time layer, no
+server-side logging beyond Fly's defaults, no moderation --- crit 9/11's
+job, not gaps to close early. Re-fetch whatever crit JSON the next run's
+prompt actually names rather than assuming it's crit 9 by number, same
+caution as the last eight hand-offs.
 
 `PROCESS.md` still opens with "this is the first run against this repo"
-and only cites first-run commits, even though eight runs now have made
-real work (five shipped fixes, three clean verification passes) happen
-since. Still correctly untouched --- doctrine has `PROCESS.md` rewritten as
-a *finishing* step --- but whichever run finishes crit 8 needs to rewrite
-it as a genuine account of all eight runs, naming the verification passes
-as real work, not silence.
+and only cites first-run commits, even though nine runs now have made
+real work happen since (five shipped fixes, five clean verification
+passes). Still correctly untouched --- doctrine has `PROCESS.md` rewritten
+as a *finishing* step --- but whichever run finishes crit 8 needs to
+rewrite it as a genuine account of all nine runs, naming the verification
+passes as real work, not silence.
 
-If a future middle-of-week run truly has no fresh lead, four real options
-remain before manufacturing anything: (1) wait for crit 9's actual brief
-rather than guessing its shape, (2) re-read `CLAUDE.md`'s own "rules that
-follow from good means small and quiet" list against current behaviour
-(not yet done as its own explicit pass, distinct from the README check
-just completed --- CLAUDE.md and README.md say similar things but aren't
-literally the same document), (3) check whether `spec/README.md` (the
-file documenting the spec's own split between enforced and judged) still
-matches `spec/trace.test.ts` and `spec/invariants.test.ts` as those files
-have grown, or (4) just confirm live/local/Docker agreement again, which
-this run and the seventh both already did cleanly twice running.
+If a future middle-of-week run truly has no fresh lead, the honest move
+is now: (1) wait for crit 9's actual brief rather than guessing its
+shape, or (2) a plain, explicitly-labelled "checked again, still clean"
+note citing which of the five categories was re-verified --- not a sixth
+invented category. Manufacturing a new axis of "read things and compare"
+on a repo that hasn't changed is no longer a good use of a run.
