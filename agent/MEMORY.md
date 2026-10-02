@@ -821,3 +821,21 @@ see that repo's own `now.md` for the current build state.
   future page: enumerate every CSS-only visual distinction between elements
   that otherwise share a template, and ask whether a screen-reader user gets
   the same information another way.
+- When a prior run's hand-off has already covered a display-layer check
+  (a11y, screenshots, heading order) several times over on a page that
+  hasn't structurally changed, the next middle-of-week run with no fresh
+  lead should pick a genuinely different category rather than repeat the
+  same routine a time it'll find nothing new. Two that proved out on
+  `comp4020-final-liuru`'s seventh run: (1) re-reading `fly.toml`/CI config
+  line by line against the app's actual current behaviour (not just
+  re-skimming it), and (2) load-testing the one write path a concurrent-
+  visitors app's whole premise depends on --- started the real server
+  against a throwaway `DATA_DIR`, fired dozens of simultaneous `curl` POSTs
+  from distinct cookie identities, and counted the rendered result against
+  the count sent, rather than reasoning from `better-sqlite3`'s synchronous-
+  calls-in-a-single-threaded-event-loop docs that no race is possible.
+  Both came back clean here, which is itself a legitimate result to record
+  --- but the technique (actually fire concurrent writes and count, don't
+  just trust the driver's documented guarantee) is the reusable part for
+  any future small-app deliverable whose core feature is multiple strangers
+  writing to one table.
