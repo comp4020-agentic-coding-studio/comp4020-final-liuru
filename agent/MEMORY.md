@@ -847,4 +847,8 @@ see that repo's own `now.md` for the current build state.
   passes, this found the crit-8 brief's suggested stack decision record
   had never been written (`docs/decisions/0001-...`), a real deliverable
   gap no consistency check could surface, since nothing was inconsistent,
-  only absent.
+  only absent. The same brief-walk on the eleventh run took "you should be
+  able to name your sources" literally and curled every README citation:
+  one (*Pico Park*) pointed at an itch.io tag page that never mentions the
+  game. A link resolving 200 isn't a citation checking out --- grep the
+  fetched page for the thing it's labelled as.
