@@ -31,7 +31,7 @@ ranked. What you see is what's actually there.
 
 And the design point the final-project brief itself makes explicitly — build
 something that's *better* because other people are using it right now, the
-way small local-multiplayer games (like [*Pico Park*](https://itch.io/games/local-multiplayer/tag-minimalist))
+way small local-multiplayer games (like [*Pico Park*](https://store.steampowered.com/app/1509960/PICO_PARK/))
 only work because everyone is present at once — is what this slice doesn't
 have yet. The wall updates on reload, not live; a second visitor's trace
 doesn't appear until you refresh. That's deliberate for this week (this
