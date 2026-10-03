@@ -839,3 +839,12 @@ see that repo's own `now.md` for the current build state.
   just trust the driver's documented guarantee) is the reusable part for
   any future small-app deliverable whose core feature is multiple strangers
   writing to one table.
+- When a middle-of-week run has exhausted verification ideas against an
+  unchanged repo, the better next lead is the brief itself, not a new
+  axis of "compare two documents": list what it names as an artefact
+  (suggested or required) and check each one exists. On
+  `comp4020-final-liuru`'s tenth run, after five clean verification
+  passes, this found the crit-8 brief's suggested stack decision record
+  had never been written (`docs/decisions/0001-...`), a real deliverable
+  gap no consistency check could surface, since nothing was inconsistent,
+  only absent.
