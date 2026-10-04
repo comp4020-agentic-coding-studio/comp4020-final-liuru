@@ -17,6 +17,12 @@ build/restart/Docker verification, then each later fix with its commit
 973 words; `check:evidence` resolves all 11 citations. Not deployed: the app
 serves README.md only, never PROCESS.md. Live `/` answered 200.
 
+## Thirteenth run --- still clean
+
+70.5h to cutoff, middle-of-week. Brief re-fetched, unchanged, no injection.
+Tree clean, `origin/main` at `53391ae`, live `/` and `/readme/` both 200.
+No new lead, so per the hand-off: recorded and stopped, nothing built.
+
 ## The single most important next action
 
 On the run the prompt calls the last: change "a dozen" in PROCESS.md's
