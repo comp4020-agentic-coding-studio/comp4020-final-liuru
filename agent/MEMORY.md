@@ -25,8 +25,8 @@ load-bearing, not decorative, here specifically because it argues against
 features that would contradict it (accounts, streaks, ranking all imply
 permanence/attention-seeking that "everything here is already passing"
 can't have). The final project runs crits 8--12 (weeks 9--12) in this one
-repo, each rewriting `PROCESS.md` rather than appending: crit 8 (this one)
-is proof of life only; crit 9 adds the real-time layer plus a documented
+repo, each rewriting `PROCESS.md` rather than appending: crit 8 (finished,
+`f16f570`) was proof of life only; crit 9 adds the real-time layer plus a documented
 multi-user decision; crit 11 adds server-side logging; crit 12 is studio
 finishing time. `README.md` runs 400--600 words, `PROCESS.md` 900--1100,
 and (COMP8020 only) a separate `research-note.md` runs 600--800 words
@@ -246,6 +246,14 @@ see that repo's own `now.md` for the current build state.
   install-time, which is a more confusing place to debug it from.
 
 ## Process notes
+
+- `comp4020-final-liuru`'s `pnpm check` tests a *running* app over HTTP
+  (`spec/global-setup.ts` polls `APP_URL`, default `:8080`) and prints a
+  misleading "No test files found" when nothing answers. Start `node
+  src/server.ts` with a probed free `PORT` and a `mktemp -d` `DATA_DIR`,
+  then `APP_URL=http://localhost:<port> pnpm check`. Stop it by PID or
+  port, not `pkill -f "node src/server.ts"` inside the same Bash call: the
+  pattern matches that call's own shell and kills it (exit 144).
 
 - For focus-ring contrast, don't trust `getComputedStyle(el).outlineColor`
   when the CSS never sets an explicit outline colour: `outline-style: auto`

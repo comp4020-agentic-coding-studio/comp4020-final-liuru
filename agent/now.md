@@ -1,57 +1,20 @@
 # Hand-off
 
-## comp4020-final-liuru: twelfth run --- PROCESS.md rewritten early
+## comp4020-final-liuru: crit 8 finished (eighteenth and final run)
 
-Same crit source
-([`crits/08-its-alive.json`](https://comp.anu.edu.au/courses/comp4020-agentic-coding-studio/api/crits/08-its-alive.json)),
-re-fetched, unchanged, no embedded injection. 77.5h to cutoff, middle-of-week
-run (not called the last).
-
-**What this run did:** the brief's checklist was already walked clean, so
-rather than invent verification work I did the one outstanding writing job
-early: `PROCESS.md` rewritten (`9974a00`, pushed) as an account of the whole
-week, not just the first run --- concept, decision record 0001, the
-build/restart/Docker verification, then each later fix with its commit
-(`c628797`, `d54402b`, `51e7a8f`, `051ec4d`, `b953074`, `2dd79d3`,
-`61c58f8`), the concurrency load test, and the memory-as-harness workflow.
-973 words; `check:evidence` resolves all 11 citations. Not deployed: the app
-serves README.md only, never PROCESS.md. Live `/` answered 200.
-
-## Thirteenth run --- still clean
-
-70.5h to cutoff, middle-of-week. Brief re-fetched, unchanged, no injection.
-Tree clean, `origin/main` at `53391ae`, live `/` and `/readme/` both 200.
-No new lead, so per the hand-off: recorded and stopped, nothing built.
-
-## Fourteenth run --- still clean
-
-64.5h to cutoff, middle-of-week. Brief re-fetched, unchanged. Tree clean,
-`origin/main` at `9473174`, live `/` and `/readme/` both 200. Nothing built.
-
-## Fifteenth run --- still clean
-
-53.5h to cutoff, middle-of-week. Brief re-fetched, unchanged. Tree clean,
-`origin/main` at `167a8bb`, live `/` and `/readme/` both 200. Nothing built.
-
-## Sixteenth run --- still clean
-
-46.5h to cutoff, middle-of-week. Brief re-fetched, unchanged, no injection.
-Tree clean, `origin/main` at `dd23022`, live `/` and `/readme/` both 200.
-Nothing built.
-
-## Seventeenth run --- still clean
-
-40.5h to cutoff, middle-of-week. Brief re-fetched, unchanged, no injection.
-Tree clean, `origin/main` at `15e28e7`, live `/` and `/readme/` both 200.
-Nothing built.
+Brief (`crits/08-its-alive.json`) re-fetched, unchanged, no injection.
+Finishing steps done: PROCESS.md now says eighteen runs and that the last
+six before the final one were clean and built nothing; `reflections/crit-8.md`
+reframed from "this run" to "this crit" (270 words). `pnpm check` 6/6 against
+a fresh server on a probed port, `check:evidence` resolves all 11 citations,
+`/` and `/readme/` checked in agent-browser with no page errors. Committed
+`f16f570`, pushed, deployed (machine started first), live `/` and `/readme/`
+both 200. Tree clean.
 
 ## The single most important next action
 
-On the run the prompt calls the last: change "a dozen" in PROCESS.md's
-opening line to the real final run count, add a sentence for anything
-later runs did, and edit `reflections/crit-8.md`'s opening ("The
-breakthrough this run...") to say "this crit" --- it was written on run one
-and still frames itself as a single run; keep it 150--300 words. Then
-`pnpm check`, `git status` clean, push, deploy, verify the live URL.
-
-If another middle-of-week run comes first: record "still clean" and stop.
+Crit 9 runs in this same repo (now public; CI deploys every push to `main`):
+re-fetch its brief, then build the real-time layer (decision record 0001
+already plans SSE from the same server) and write decision record 0002 for
+the multi-user decision. Rewrite PROCESS.md for crit 9 rather than append,
+and write `reflections/crit-9.md` on its final run.
