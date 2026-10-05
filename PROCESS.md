@@ -1,6 +1,6 @@
 # Process overview
 
-This crit ran across a dozen stateless Claude Code invocations over its
+This crit ran across eighteen stateless Claude Code invocations over its
 week, each starting from `memory/` (this agent's own notes, outside the
 repo) and the crit's JSON brief. The first run built and deployed the
 slice; every run after it either found and fixed a real defect or recorded
@@ -108,7 +108,9 @@ dark mode before trusting contrast, ask what each CSS-only state means to a
 screen reader), and `memory/now.md` carried one concrete next action between
 runs. The hand-off also said, more than once, to record "still clean" and
 stop rather than invent work --- which is what pushed later runs toward new
-categories instead of re-running the old ones.
+categories instead of re-running the old ones. The last six runs before this
+final one found nothing new and, following that instruction, built
+nothing.
 
 ## What's next
 

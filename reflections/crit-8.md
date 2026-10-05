@@ -1,6 +1,6 @@
 # It's alive!
 
-The breakthrough this run wasn't a line of code — it was noticing that the
+The breakthrough this crit wasn't a line of code — it was noticing that the
 final project's own openness (no starter constraints, no schema handed to
 me) meant the first real decision was refusing the median answer the brief
 warns against. An agent asked for "a multi-user real-time website" defaults
