@@ -1,122 +1,116 @@
 # Process overview
 
-This crit ran across eighteen stateless Claude Code invocations over its
-week, each starting from `memory/` (this agent's own notes, outside the
-repo) and the crit's JSON brief. The first run built and deployed the
-slice; every run after it either found and fixed a real defect or recorded
-a clean pass. Commit links below go to
+This is the crit-9 account. Crit 8's slice (a deployed wall where a visitor
+tags a short thought as one of the Diamond Sūtra's six similes, persisted in
+SQLite on a Fly volume) is the starting point; its full story is in this
+file's history at
+[`f16f570`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/f16f570).
+As before, the work runs as a series of stateless Claude Code invocations,
+each starting from `memory/` (this agent's notes, outside the repo) and the
+crit's JSON brief. Commit links go to
 [the repo's history](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commits/main).
 
-## From brief to concept
+## From brief to decision
 
-The crit's bar is narrow on purpose: deployed, doing its core thing for a
-stranger, with a trace that survives a return visit. Real-time, features and
-polish come later. The final-project brief is the wider contract this slice
-grows into, and its notes on "good" gesture at the small web, home-cooked
-software and games for a handful of friends. I searched for each before
-writing README's argument around them, rather than paraphrasing the brief
-back at itself.
+The crit-9 brief asks for two things: a change one person makes reaches
+everyone else within about a second, without a reload; and one multi-user
+behaviour decision, written down with the options weighed and the cost of
+the one chosen. It is explicit that the transport isn't the decision. That
+matched where crit 8 left things:
+[decision record 0001](docs/decisions/0001-plain-node-and-sqlite.md) had
+already named Server-Sent Events from the same `node:http` server as the
+plan, and named the conditions under which it would stop being enough
+(client-to-server streaming, or fiddly hand-rolled fan-out). Neither came up,
+so the transport needed a status line in 0001, not a new record.
 
-The concept --- a shared wall where a visitor tags a short thought as one of
-the Diamond Sūtra's six similes (dream, illusion, bubble, shadow, dew,
-lightning) --- comes from this agent's own name in the course (Tang Yin's
-Buddhist name, 六如). The theme is a constraint, not a skin: a wall whose
-premise is "everything here is already passing" can't have accounts,
-streaks, or a popularity sort without contradicting itself. That is the
-design decision behind
-[`ff0b374`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/ff0b374)'s
-README, and the repo's `CLAUDE.md` turns it into rules future runs follow.
+The decision that did need one was presence. Of the brief's examples (what
+reaches others live, who else is visible, simultaneous edits, what a
+returning visitor sees), simultaneous edits don't exist here, since a trace
+is permanent and nobody edits anything. Presence is the one where README's
+own argument pulls against the brief. The final-project brief wants an app
+that's better because other people are using it right now, and on a live
+wall a stranger who reads without posting is invisible. But README defines
+good as small and quiet, and the repo's `CLAUDE.md` turns that into a rule:
+no visible reader counts.
 
-## Building the slice
+I wrote [decision record 0002](docs/decisions/0002-presence-without-a-count.md)
+first, in
+[`4b524f9`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/4b524f9),
+before any code, so the implementation had something to be held to. It
+weighs four options: no presence at all, an exact count, per-visitor markers
+(cursors, a typing indicator), and the one chosen, a single line of plain
+text with three states --- you're the only one here, someone else is here, a
+few others are. The rule in `CLAUDE.md` did real work here. Without it the
+exact count is the default every real-time demo reaches for; with it, the
+question became what the smallest honest answer to "am I alone?" is. The
+record also says what the choice costs: the wall can't tell two visitors
+from twenty, an open tab keeps the scale-to-zero machine awake, and the
+in-memory fan-out is only correct because `fly.toml` pins one machine.
 
-[`bf52500`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/bf52500)
-replaced the placeholder with plain `node:http` and `better-sqlite3`, one
-table, no framework and no build step. The reasoning is written up as
-[decision record 0001](docs/decisions/0001-plain-node-and-sqlite.md)
-([`572456a`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/572456a)),
-the format the brief suggests: three routes don't need routing middleware,
-and the 256 MB Fly machine with one volume rules out a separate database
-server. The record also names where it expects to break --- crit 9's
-real-time layer --- and what would trigger a record 0002.
+## Building the live layer
 
-Persistence is the one thing this week grades, so I tested it by restart
-rather than by reading the SQL: posted through a real cookie jar, killed the
-server, started a fresh process on the same data directory, and found the
-trace still there.
-[`073f417`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/073f417)
-turned that promise and the server's validation into HTTP-level tests
-against the running app. Before the first deploy I built the real Dockerfile
-locally and ran `pnpm check` against the container with `--tmpfs /data`,
-the way CI does, since a dev-server pass says nothing about a missed native
-build step in the image.
+[`f498c1f`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/f498c1f)
+adds `GET /events`. Three details came from the decision rather than the
+transport:
 
-## What the later runs found
+- **Presence counts visitor cookies, not connections.** Otherwise your own
+  second tab tells you someone else is here, which would be the one outright
+  lie the line could tell.
+- **Each trace is rendered per listener.** The "yours" marking depends on
+  who's looking, so the server renders the same `renderTrace` the page uses
+  once for each open stream, rather than sending JSON and duplicating the
+  template in client code.
+- **Nothing goes missing in a gap.** Every trace event carries its row id,
+  which `EventSource` sends back as `Last-Event-ID` on reconnect, and the
+  page passes the newest id it was rendered with, so a trace posted between
+  page load and stream open is replayed too.
 
-The deliberate habit across the week was a fresh read each run, aimed at a
-different category, rather than repeating the last run's routine. Most of
-what turned up was invisible to `pnpm check`, which was green throughout.
+The page still works with JavaScript off: the form posts and reloads as it
+did in crit 8. With JavaScript, posting goes through `fetch` and your own
+trace comes back over the stream like everyone else's; if the stream is
+down, the form falls back to a plain post. New traces land at the top in a
+polite live region and the presence line is a `role="status"`, so a
+screen-reader user hears both changes. Arrivals get no sound, no title
+badge and no "new" highlight, since `CLAUDE.md` rules out anything that exists to bring
+someone back.
 
-- **Dark mode.** The page declares `color-scheme: light dark`, but muted
-  text kept fixed grey literals. Emulating dark mode and pixel-sampling a
-  screenshot measured 3.3--4.2:1, below AA;
-  [`c628797`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/c628797)
-  switched to `light-dark()` so each scheme clears AA on its own.
-- **Heading outline.** `/readme/` wrapped README's own `h1` in a second page
-  `h1`; reading the real heading sequence caught it
-  ([`d54402b`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/d54402b)).
-- **The 240-character cap.** `CLAUDE.md` listed it as enforced, but no test
-  covered it.
-  [`51e7a8f`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/51e7a8f)
-  added one, and the 300-character unbroken string it left on the wall then
-  blew the grid column out to 2213 px on a phone. A grid item's default
-  `min-width: auto` beats `overflow-wrap`;
-  [`051ec4d`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/051ec4d)
-  fixed that and added the missing `main` landmark. Writing the test first
-  is what produced the input that broke the layout.
-- **Visual-only meaning.** The "mine" highlight that lets a returning
-  visitor find their own trace was a background colour and nothing else, so
-  a screen-reader user never got the feature README describes.
-  [`b953074`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/b953074)
-  added a visually hidden "yours:" prefix;
-  [`2dd79d3`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/2dd79d3)
-  did the same for each kind's glyph, which had leaned on a `title`
-  tooltip. axe-core passed both before the fix: it checks markup against
-  rules, not whether every visual distinction has a non-visual twin.
-- **Concurrency.** The wall's premise is strangers writing at once, so one
-  run fired dozens of simultaneous POSTs from distinct cookies at a
-  throwaway server and counted the result, rather than trusting the
-  driver's documented single-threaded guarantee. The count came back exact.
-- **The brief as a checklist.** After several clean passes, walking the
-  brief item by item found two things no consistency check could: the
-  suggested decision record had never been written (now 0001), and a README
-  citation for *Pico Park* pointed at an itch.io tag page that never
-  mentions the game.
-  [`61c58f8`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/61c58f8)
-  repointed it. A link answering 200 isn't a citation checking out.
+## Grounding and correcting it
 
-Each fix was deployed with `flyctl deploy` and checked against the live URL,
-not the local build. One deploy failed six times with "insufficient memory"
-while the scale-to-zero machine was stopped; starting the machine first and
-deploying into it went through at once.
+The same commit turns the decision record's claims into tests.
+`spec/live.test.ts` parses the event stream over plain HTTP against the
+running app: a trace from one cookie reaches another cookie's stream within
+a second, the "yours" marking appears only on the poster's own stream, a
+reconnect with `Last-Event-ID` gets the missed trace and not the one it
+already had, and presence moves from alone to "someone else" to "a few
+others", stays at "someone else" when the same visitor opens a second tab,
+and never contains a digit. `CLAUDE.md`'s enforced list now names all of
+these, so a future run that "improves" presence into a count fails the
+suite rather than quietly passing.
 
-## The harness behind it
+Then a real browser. I opened the wall in `agent-browser`, set a marker
+variable on `window`, and posted from `curl` under a different cookie. My
+first attempt never arrived, and before suspecting the stream I checked the
+request: I had built the URL as `//trace`, which 404s. With the URL fixed,
+the trace appeared in the untouched tab within half a second, and the marker
+survived, which proves no reload happened. Two background `curl` streams
+moved the presence line through all three states, and closing them brought
+it back to "only one". Posting from the form added the trace marked as
+mine without a reload, cleared the input, and logged no page errors; a
+screenshot at the 390 px phone width showed the presence line sitting
+quietly between the form and the wall. Last, I built the real Dockerfile and ran the full suite against the
+container with a throwaway `/data`, exactly as CI will, since CI now deploys
+every push to `main` and a red run blocks the deploy.
 
-The workflow that made this possible is mostly memory, not prompts. Each
-lesson above went into `memory/MEMORY.md` as a reusable rule the next run
-loads automatically (probe a free port rather than hardcoding one, emulate
-dark mode before trusting contrast, ask what each CSS-only state means to a
-screen reader), and `memory/now.md` carried one concrete next action between
-runs. The hand-off also said, more than once, to record "still clean" and
-stop rather than invent work --- which is what pushed later runs toward new
-categories instead of re-running the old ones. The last six runs before this
-final one found nothing new and, following that instruction, built
-nothing.
+README had said real-time was next crit's job, and its list of gaps still
+named it. A crit-7 lesson is that a README's scope claims drift false as the
+app grows, and nothing in `pnpm check` notices, so the same commit rewrote
+those lines to describe the live layer and point at 0002.
 
 ## What's next
 
-Crit 9 asks for the real-time layer and a documented multi-user decision.
-The wall updates only on reload today, which is the gap between this slice
-and the co-presence README argues for. Decision record 0001 already names
-Server-Sent Events from the same server as the plan, and when that would
-stop being enough. Rate limiting and moderation stay named in README as
-real, open gaps.
+The live URL is the real test of the stream: Fly's proxy sits between the
+browser and the server, and an idle stream there needs the 20-second
+heartbeat the server sends. Verifying presence and arrival across two real
+devices on the deployed app comes next. The pod will argue for the option I
+didn't pick, and the exact count is the strongest of them: it's what makes
+a busy wall look busy. That's what 0002 gives up on purpose.
