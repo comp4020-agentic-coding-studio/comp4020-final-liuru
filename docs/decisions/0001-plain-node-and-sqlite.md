@@ -1,6 +1,7 @@
 # 0001: plain Node and SQLite, no framework
 
-Status: accepted (crit 8). Revisit at crit 9, when the real-time layer lands.
+Status: accepted (crit 8). Crit 9's real-time layer fit inside it as planned: SSE
+from the same server, no new dependency (see [0002](0002-presence-without-a-count.md)).
 
 ## Context
 
