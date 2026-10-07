@@ -87,6 +87,7 @@ const shell = (title: string, body: string): string => `<!doctype html>
       li.trace .glyph { font-size: 1.1rem; text-align: center; }
       li.trace .text { overflow-wrap: anywhere; min-width: 0; }
       li.trace .when { font-size: 0.75rem; color: light-dark(#595959, #999); white-space: nowrap; }
+      .presence { color: light-dark(#595959, #999); font-size: 0.85rem; min-height: 1.4em; margin: 0 0 0.5rem; }
       .empty { color: light-dark(#595959, #999); font-style: italic; }
       pre.readme-body { white-space: pre-wrap; }
       .visually-hidden {
@@ -107,25 +108,59 @@ const shell = (title: string, body: string): string => `<!doctype html>
   </body>
 </html>`;
 
+export function renderTrace(t: Trace, visitorId: string): string {
+  const meta = KIND_META[t.kind];
+  const isMine = t.visitorId === visitorId;
+  const mineLabel = isMine ? `<span class="visually-hidden">yours: </span>` : "";
+  return `<li id="trace-${t.id}" class="trace kind-${t.kind}${isMine ? " mine" : ""}">
+    <span class="glyph" aria-hidden="true" title="${meta.hanzi} ${escapeHtml(meta.label)}">${meta.glyph}</span>
+    <span class="visually-hidden">tagged as ${escapeHtml(meta.label)}: </span>
+    <span class="text">${mineLabel}${escapeHtml(t.text)}</span>
+    <span class="when">${relativeTime(t.createdAt)}</span>
+  </li>`;
+}
+
+// Three states and never a number: it answers "am I alone?" and nothing more
+// (decision record 0002).
+export function presenceText(others: number): string {
+  if (others <= 0) return "you're the only one here right now";
+  if (others === 1) return "someone else is here right now";
+  return "a few others are here right now";
+}
+
+// Progressive enhancement: without it the form posts and the page reloads,
+// as it always has. With it, traces arrive over /events and posting doesn't
+// reload. If the stream is down, the form falls back to a plain post.
+const liveScript = `
+  const wall = document.querySelector("ul.wall");
+  const presence = document.getElementById("presence");
+  const form = document.querySelector("form.trace-form");
+  const source = new EventSource("/events?after=" + wall.dataset.after);
+  let live = false;
+  source.addEventListener("open", () => { live = true; });
+  source.addEventListener("error", () => { live = false; presence.textContent = ""; });
+  source.addEventListener("presence", (e) => { presence.textContent = e.data; });
+  source.addEventListener("trace", (e) => {
+    if (document.getElementById("trace-" + e.lastEventId)) return;
+    wall.querySelector(".empty")?.remove();
+    wall.insertAdjacentHTML("afterbegin", JSON.parse(e.data));
+  });
+  form.addEventListener("submit", async (e) => {
+    if (!live) return;
+    e.preventDefault();
+    const body = new URLSearchParams(new FormData(form));
+    form.elements.text.value = "";
+    await fetch(form.action, { method: "POST", body, redirect: "manual" });
+  });
+`;
+
 export function renderWall(traces: Trace[], visitorId: string): string {
   const options = Object.entries(KIND_META)
     .map(([value, m]) => `<option value="${value}">${m.hanzi} ${escapeHtml(m.label)}</option>`)
     .join("");
 
   const items = traces.length
-    ? traces
-        .map((t) => {
-          const meta = KIND_META[t.kind];
-          const isMine = t.visitorId === visitorId;
-          const mineLabel = isMine ? `<span class="visually-hidden">yours: </span>` : "";
-          return `<li class="trace kind-${t.kind}${isMine ? " mine" : ""}">
-            <span class="glyph" aria-hidden="true" title="${meta.hanzi} ${escapeHtml(meta.label)}">${meta.glyph}</span>
-            <span class="visually-hidden">tagged as ${escapeHtml(meta.label)}: </span>
-            <span class="text">${mineLabel}${escapeHtml(t.text)}</span>
-            <span class="when">${relativeTime(t.createdAt)}</span>
-          </li>`;
-        })
-        .join("\n")
+    ? traces.map((t) => renderTrace(t, visitorId)).join("\n")
     : `<li class="empty">nothing has passed through yet</li>`;
 
   const body = `
@@ -144,10 +179,12 @@ export function renderWall(traces: Trace[], visitorId: string): string {
         </label>
         <button type="submit">let it go</button>
       </form>
-      <ul class="wall">
+      <p id="presence" class="presence" role="status"></p>
+      <ul class="wall" aria-live="polite" data-after="${traces[0]?.id ?? 0}">
         ${items}
       </ul>
     </main>
+    <script type="module">${liveScript}</script>
   `;
   return shell("六如 — a wall for passing things", body);
 }

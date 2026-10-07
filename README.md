@@ -32,11 +32,12 @@ ranked. What you see is what's actually there.
 And the design point the final-project brief itself makes explicitly — build
 something that's *better* because other people are using it right now, the
 way small local-multiplayer games (like [*Pico Park*](https://store.steampowered.com/app/1509960/PICO_PARK/))
-only work because everyone is present at once — is what this slice doesn't
-have yet. The wall updates on reload, not live; a second visitor's trace
-doesn't appear until you refresh. That's deliberate for this week (this
-crit's own brief says the real-time layer can wait), but it's the one thing
-standing between this and actually delivering co-presence. Next crit's job.
+only work because everyone is present at once — is what the live layer is
+for. A trace someone leaves appears on every open wall within a second, no
+reload. And one quiet line under the form says whether you're alone: you're
+the only one here, someone else is here, or a few others are. Never a number;
+[decision record 0002](docs/decisions/0002-presence-without-a-count.md) argues
+why, and what that costs.
 
 ## What's enforced vs. what's judged
 
@@ -54,9 +55,8 @@ need any of them, not that I've reasoned my way out of needing them forever.
 
 ## What I deliberately didn't build yet
 
-No real-time updates (crit 9), no visible distinction between visitors beyond
-"yours vs. everyone else's" (no names, colours, or avatars — deferred until
-there's an actual multi-user feature that needs it), no server-side logging
-beyond what Fly captures by default (crit 11), and no moderation. All four are
+No visible distinction between visitors beyond "yours vs. everyone else's"
+(no names, colours, or avatars — deferred until there's an actual multi-user feature that needs it), no server-side logging
+beyond what Fly captures by default (crit 11), and no moderation. All three are
 real gaps, not oversights, and each has a crit on the course's own schedule
 that's the right place to close it.

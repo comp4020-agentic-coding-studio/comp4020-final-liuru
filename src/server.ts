@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
-import { createServer, type IncomingMessage } from "node:http";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { marked } from "marked";
-import { addTrace, isKind, recentTraces } from "./db.ts";
-import { renderReadme, renderWall } from "./templates.ts";
+import { addTrace, isKind, recentTraces, type Trace, tracesAfter } from "./db.ts";
+import { presenceText, renderReadme, renderTrace, renderWall } from "./templates.ts";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const VISITOR_COOKIE = "visitor";
@@ -35,6 +35,35 @@ function visitorCookie(id: string): string {
   return `${VISITOR_COOKIE}=${id}; Max-Age=${FIVE_YEARS}; Path=/; HttpOnly; SameSite=Lax`;
 }
 
+// Everyone with the wall open, held in this one process's memory. That's only
+// correct because fly.toml pins a single machine (decision record 0002).
+interface Listener {
+  res: ServerResponse;
+  visitorId: string;
+}
+const listeners = new Set<Listener>();
+
+function send(res: ServerResponse, event: string, data: string, id?: number): void {
+  res.write(`${id === undefined ? "" : `id: ${id}\n`}event: ${event}\ndata: ${data}\n\n`);
+}
+
+function sendTrace(l: Listener, t: Trace): void {
+  // rendered per listener, since "yours" depends on who's looking
+  send(l.res, "trace", JSON.stringify(renderTrace(t, l.visitorId)), t.id);
+}
+
+// Counted by visitor cookie, not connection, so your own second tab never
+// shows up as "someone else".
+function broadcastPresence(): void {
+  const others = new Set([...listeners].map((l) => l.visitorId)).size - 1;
+  for (const l of listeners) send(l.res, "presence", presenceText(others));
+}
+
+setInterval(() => {
+  // a comment line keeps Fly's proxy from closing an idle stream
+  for (const l of listeners) l.res.write(": still here\n\n");
+}, 20_000).unref();
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
   const cookies = parseCookies(req.headers.cookie);
@@ -59,13 +88,38 @@ const server = createServer(async (req, res) => {
       const kind = params.get("kind") ?? "";
       const text = (params.get("text") ?? "").trim().slice(0, 240);
       if (isKind(kind) && text.length > 0) {
-        addTrace(visitorId, kind, text);
+        const trace = addTrace(visitorId, kind, text);
+        for (const l of listeners) sendTrace(l, trace);
       }
       res.writeHead(303, {
         location: "/",
         ...(setCookie ? { "set-cookie": setCookie } : {}),
       });
       res.end();
+      return;
+    }
+
+    if (url.pathname === "/events" && req.method === "GET") {
+      res.writeHead(200, {
+        "content-type": "text/event-stream; charset=utf-8",
+        "cache-control": "no-cache",
+        ...(setCookie ? { "set-cookie": setCookie } : {}),
+      });
+      // `after` is the newest trace the page was rendered with; on a
+      // reconnect EventSource sends the last id it saw instead. Either way,
+      // replay whatever this tab missed.
+      const after = Math.max(
+        Number(url.searchParams.get("after")) || 0,
+        Number(req.headers["last-event-id"]) || 0,
+      );
+      const listener = { res, visitorId };
+      for (const t of tracesAfter(after)) sendTrace(listener, t);
+      listeners.add(listener);
+      broadcastPresence();
+      req.on("close", () => {
+        listeners.delete(listener);
+        broadcastPresence();
+      });
       return;
     }
 
