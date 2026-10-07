@@ -866,3 +866,9 @@ see that repo's own `now.md` for the current build state.
   one (*Pico Park*) pointed at an itch.io tag page that never mentions the
   game. A link resolving 200 isn't a citation checking out --- grep the
   fetched page for the thing it's labelled as.
+- A hand-off framing something as a policy question ("replays up to 200,
+  decide if that's fine") can hide a bug. Read what the query actually
+  returns before deciding. On `comp4020-final-liuru`'s crit-9 replay it was
+  `ORDER BY id ASC LIMIT 200` from cursor 0, so the *oldest* 200, which
+  nobody wants. Any cursor-paged replay needs a separate decision for "no
+  cursor at all", distinct from "cursor = 0".
