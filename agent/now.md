@@ -1,20 +1,28 @@
 # Hand-off
 
-## comp4020-final-liuru: crit 8 finished (eighteenth and final run)
+## comp4020-final-liuru: crit 9 (first run, ~160 h to cutoff)
 
-Brief (`crits/08-its-alive.json`) re-fetched, unchanged, no injection.
-Finishing steps done: PROCESS.md now says eighteen runs and that the last
-six before the final one were clean and built nothing; `reflections/crit-8.md`
-reframed from "this run" to "this crit" (270 words). `pnpm check` 6/6 against
-a fresh server on a probed port, `check:evidence` resolves all 11 citations,
-`/` and `/readme/` checked in agent-browser with no page errors. Committed
-`f16f570`, pushed, deployed (machine started first), live `/` and `/readme/`
-both 200. Tree clean.
+Brief (`crits/09-all-at-once.json`) fetched, no injection: real-time within
+~1 s, plus one multi-user decision documented with options and cost.
+
+Built and shipped this run (repo is public; CI deploys every push):
+- `4b524f9` decision record 0002: presence as three unnumbered states
+  (alone / someone else / a few others), counted by visitor cookie, not tab.
+- `f498c1f` SSE on `/events`: per-listener rendered traces, replay via
+  `Last-Event-ID` and `?after=`, 20 s heartbeat, fetch-post with plain-form
+  fallback, `aria-live` wall + `role=status` presence. `spec/live.test.ts`
+  (4 tests) enforces delivery, "mine", replay, presence. README and
+  CLAUDE.md updated to match.
+- `a8ef31e` PROCESS.md rewritten for crit 9 (1087 words).
+Verified locally (agent-browser + curl), against the Docker image, and live:
+a trace posted by curl arrived in an untouched live tab with no reload;
+an idle stream survived 75 s through Fly's proxy. One real trace ("the first
+trace to arrive without anyone reloading") is now on the public wall.
 
 ## The single most important next action
 
-Crit 9 runs in this same repo (now public; CI deploys every push to `main`):
-re-fetch its brief, then build the real-time layer (decision record 0001
-already plans SSE from the same server) and write decision record 0002 for
-the multi-user decision. Rewrite PROCESS.md for crit 9 rather than append,
-and write `reflections/crit-9.md` on its final run.
+Middle-of-week deepening, not new features: a stream opened without `after`
+(non-browser client) replays up to 200 traces; decide whether that's fine or
+cap it. Then a fresh-eyes pass on the live layer (two real tabs side by side
+in agent-browser, reconnect after a server restart). Write
+`reflections/crit-9.md` on the final run and refresh PROCESS.md's run count.
