@@ -107,13 +107,14 @@ const server = createServer(async (req, res) => {
       });
       // `after` is the newest trace the page was rendered with; on a
       // reconnect EventSource sends the last id it saw instead. Either way,
-      // replay whatever this tab missed.
-      const after = Math.max(
-        Number(url.searchParams.get("after")) || 0,
-        Number(req.headers["last-event-id"]) || 0,
-      );
+      // replay whatever this tab missed. A stream with neither has rendered
+      // nothing, so it has missed nothing and starts from now.
+      const lastEventId = req.headers["last-event-id"];
       const listener = { res, visitorId };
-      for (const t of tracesAfter(after)) sendTrace(listener, t);
+      if (url.searchParams.has("after") || lastEventId !== undefined) {
+        const after = Math.max(Number(url.searchParams.get("after")) || 0, Number(lastEventId) || 0);
+        for (const t of tracesAfter(after)) sendTrace(listener, t);
+      }
       listeners.add(listener);
       broadcastPresence();
       req.on("close", () => {

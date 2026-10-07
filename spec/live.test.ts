@@ -130,6 +130,15 @@ it("a reconnecting stream gets the traces it missed, and not the ones it already
   expect(again.events.some((e) => e.data.includes(seen))).toBe(false);
 });
 
+it("a stream opened with no cursor replays nothing and starts from now", async () => {
+  await post(visitor(), randomText());
+  const fresh = await listen(visitor());
+  const text = randomText();
+  await post(visitor(), text);
+  await fresh.next((e) => e.event === "trace" && e.data.includes(text));
+  expect(fresh.events.filter((e) => e.event === "trace")).toHaveLength(1);
+});
+
 it("presence says whether you're alone, counts visitors not tabs, and never shows a number", async () => {
   const a = await listen(visitor());
   await a.next((e) => e.event === "presence" && e.data.includes("only one"));
