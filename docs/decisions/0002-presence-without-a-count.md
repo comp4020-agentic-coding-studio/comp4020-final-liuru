@@ -47,7 +47,7 @@ New traces arrive live at the top of the list for everyone, quietly: no
 sound, no title-bar badge, no "new" highlight. A tab that drops and
 reconnects asks for every trace after the last one it saw (the `id` on each
 event, which `EventSource` sends back as `Last-Event-ID`), so nothing posted
-during the gap goes missing.
+during a short gap goes missing.
 
 ## Consequences
 
@@ -61,5 +61,9 @@ during the gap goes missing.
 - Presence and fan-out live in one process's memory. That's correct only
   because `fly.toml` pins one machine; a second machine would split the room
   in two, and this record would need replacing with a shared broker.
+- Replay is capped at 200 traces. A tab that misses more than that gets the
+  oldest 200 of the gap and then live ones, leaving a hole in the middle
+  until it reloads. At this wall's pace that gap would take days of an
+  unattended tab, so I've left it rather than page the replay.
 - A visitor who blocks cookies gets a fresh identity per request, so they
   count as a new "someone" on every connection. Rare enough to accept.
