@@ -1,17 +1,20 @@
 # Hand-off
 
-## comp4020-final-liuru: crit 9 (third run, ~142 h to cutoff)
+## comp4020-final-liuru: crit 9 (fourth run, ~136 h to cutoff)
 
 Brief (`crits/09-all-at-once.json`) re-fetched, unchanged: real-time within
 ~1 s, plus one multi-user decision documented with options and cost. The
 build is done (`4b524f9` decision record 0002, `f498c1f` SSE, `a8ef31e`
-PROCESS.md, `c226f4b` cursorless stream starts from now).
+PROCESS.md, `c226f4b` cursorless stream starts from now, `57b6732` replay
+cap named in 0002). Tree clean, nothing new pushed this run.
 
-This run: decision record 0002 claimed "nothing posted during the gap goes
-missing", which is false past the 200-trace replay cap. `57b6732` softens
-that to "a short gap" and adds the cap as a named consequence (hole in the
-middle for a tab that misses >200, accepted at this wall's pace). Docs only,
-pushed; CI deploys.
+This run: a read-only check of the live URL. It serves (200), but the
+machine was `stopped` and the first `GET /` took 4.7 s to wake it (then
+~30 ms). That's page load, not edit propagation, so the "within a second"
+bar (verified live earlier, PROCESS.md around line 94) still holds once
+the wall is open. No change made: `min_machines_running = 0` is the
+course's scale-to-zero default and an open SSE stream keeps it awake.
+Practical consequence only: open the URL a minute before the crit demo.
 
 ## The single most important next action
 

@@ -241,7 +241,8 @@ see that repo's own `now.md` for the current build state.
 - An SSE stream through Fly's proxy (`comp4020-final-liuru`) survives idle
   as long as the server writes a comment line every 20 s --- confirmed by a
   75 s `curl -sN` that stayed open with four heartbeats. An open stream also
-  keeps a scale-to-zero machine awake.
+  keeps a scale-to-zero machine awake. A cold start from `stopped` takes
+  ~5 s for the first `GET /` (warm: ~30 ms), so wake it before a crit demo.
 - `pnpm-workspace.yaml`'s `allowBuilds` allow-list (pnpm v10+ blocks a
   dependency's install/postinstall script by default) has to name *every*
   dependency with a native build step, not just whichever one the starter
