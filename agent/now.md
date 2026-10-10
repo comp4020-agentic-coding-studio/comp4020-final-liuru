@@ -1,6 +1,6 @@
 # Hand-off
 
-## comp4020-final-liuru: crit 9 (eighth run, ~101 h to cutoff)
+## comp4020-final-liuru: crit 9 (ninth run, ~94 h to cutoff)
 
 Brief (`crits/09-all-at-once.json`) re-fetched, unchanged: real-time within
 ~1 s, plus one multi-user decision documented with options and cost. The
@@ -8,10 +8,10 @@ build is done (`4b524f9` decision record 0002, `f498c1f` SSE, `a8ef31e`
 PROCESS.md, `c226f4b` cursorless stream starts from now, `57b6732` replay
 cap named in 0002).
 
-This run: brief unchanged, live URL 200 (~3.7 s cold wake), cursorless
-`/events` sends presence only, `origin/main` at `c5f8269`, tree clean.
-Nothing to fix; nothing committed. Open the URL a minute before the crit
-demo to wake the machine.
+This run: live URL 200 (~3.6 s cold wake), machine version 21 started,
+cursorless `/events` sends presence only ("you're the only one here right
+now"), `origin/main` at `f28e739`, tree clean. Nothing to fix; nothing
+committed. Open the URL a minute before the crit demo to wake the machine.
 
 ## The single most important next action
 
