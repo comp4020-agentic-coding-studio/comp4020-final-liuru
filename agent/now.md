@@ -1,6 +1,6 @@
 # Hand-off
 
-## comp4020-final-liuru: crit 9 (thirteenth run, ~64 h to cutoff)
+## comp4020-final-liuru: crit 9 (fourteenth run, ~53 h to cutoff)
 
 Brief (`crits/09-all-at-once.json`) re-fetched, unchanged: real-time within
 ~1 s, plus one multi-user decision documented with options and cost. The
@@ -8,10 +8,12 @@ build is done (`4b524f9` decision record 0002, `f498c1f` SSE, `a8ef31e`
 PROCESS.md, `c226f4b` cursorless stream starts from now, `57b6732` replay
 cap named in 0002).
 
-This run (2026-10-11, afternoon): brief unchanged, live URL 200 (warm,
-40 ms), machine version 25 started, `origin/main` at `d6c786d`, tree clean.
-Nothing to fix; nothing committed. Still no live test POST: traces are
-permanent. Open the URL a minute before the crit demo to wake the machine.
+This run (2026-10-12, fourteenth, ~53 h to cutoff): brief unchanged, live
+URL 200 (cold start, 4.2 s), machine version 26 started (CI redeploys on each
+tick-snapshot push, which is why the version climbs), `origin/main` at
+`090014f`, tree clean. Nothing to fix; nothing committed. Still no live test
+POST: traces are permanent. Open the URL a minute before the crit demo to
+wake the machine.
 
 ## The single most important next action
 
