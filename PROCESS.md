@@ -5,7 +5,7 @@ tags a short thought as one of the Diamond Sūtra's six similes, persisted in
 SQLite on a Fly volume) is the starting point; its full story is in this
 file's history at
 [`f16f570`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/f16f570).
-As before, the work runs as a series of stateless Claude Code invocations,
+The work runs as a series of stateless Claude Code invocations,
 each starting from `memory/` (this agent's notes, outside the repo) and the
 crit's JSON brief. Commit links go to
 [the repo's history](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commits/main).
@@ -23,10 +23,8 @@ plan, and named the conditions under which it would stop being enough
 (client-to-server streaming, or fiddly hand-rolled fan-out). Neither came up,
 so the transport needed a status line in 0001, not a new record.
 
-The decision that did need one was presence. Of the brief's examples (what
-reaches others live, who else is visible, simultaneous edits, what a
-returning visitor sees), simultaneous edits don't exist here, since a trace
-is permanent and nobody edits anything. Presence is the one where README's
+The decision that did need one was presence. Of the brief's examples,
+simultaneous edits don't exist here, since a trace is permanent. Presence is the one where README's
 own argument pulls against the brief. The final-project brief wants an app
 that's better because other people are using it right now, and on a live
 wall a stranger who reads without posting is invisible. But README defines
@@ -65,10 +63,8 @@ transport:
   page passes the newest id it was rendered with, so a trace posted between
   page load and stream open is replayed too.
 
-The page still works with JavaScript off: the form posts and reloads as it
-did in crit 8. With JavaScript, posting goes through `fetch` and your own
-trace comes back over the stream like everyone else's; if the stream is
-down, the form falls back to a plain post. New traces land at the top in a
+The page still works with JavaScript off. With it, posting goes through
+`fetch` and your own trace comes back over the stream like everyone else's. New traces land at the top in a
 polite live region and the presence line is a `role="status"`, so a
 screen-reader user hears both changes. Arrivals get no sound, no title
 badge and no "new" highlight, since `CLAUDE.md` rules out anything that exists to bring
@@ -88,29 +84,38 @@ these, so a future run that "improves" presence into a count fails the
 suite rather than quietly passing.
 
 Then a real browser. I opened the wall in `agent-browser`, set a marker
-variable on `window`, and posted from `curl` under a different cookie. My
-first attempt never arrived, and before suspecting the stream I checked the
-request: I had built the URL as `//trace`, which 404s. With the URL fixed,
-the trace appeared in the untouched tab within half a second, and the marker
+variable on `window`, and posted from `curl` under a different cookie. The
+trace appeared in the untouched tab within half a second, and the marker
 survived, which proves no reload happened. Two background `curl` streams
 moved the presence line through all three states, and closing them brought
 it back to "only one". Posting from the form added the trace marked as
-mine without a reload, cleared the input, and logged no page errors; a
-screenshot at the 390 px phone width showed the presence line sitting
-quietly between the form and the wall. Last, I built the real Dockerfile and ran the full suite against the
+mine without a reload and logged no page errors. Last, I built the real Dockerfile and ran the full suite against the
 container with a throwaway `/data`, exactly as CI will, since CI now deploys
 every push to `main` and a red run blocks the deploy.
 
-README had said real-time was next crit's job, and its list of gaps still
-named it. A crit-7 lesson is that a README's scope claims drift false as the
-app grows, and nothing in `pnpm check` notices, so the same commit rewrote
-those lines to describe the live layer and point at 0002.
+README's list of gaps still named real-time as next crit's job; scope claims
+drift false as an app grows and nothing in `pnpm check` notices, so the same
+commit rewrote those lines.
 
-## What's next
+## On the live URL, and two corrections
 
-The live URL is the real test of the stream: Fly's proxy sits between the
-browser and the server, and an idle stream there needs the 20-second
-heartbeat the server sends. Verifying presence and arrival across two real
-devices on the deployed app comes next. The pod will argue for the option I
-didn't pick, and the exact count is the strongest of them: it's what makes
-a busy wall look busy. That's what 0002 gives up on purpose.
+Fly's proxy sits between the browser and the server, so the deployed app
+was the real test of the stream. A 75-second `curl -sN` against it stayed
+open across four heartbeats, the 20-second comment line the server writes so
+an idle stream isn't cut. An open stream also keeps the scale-to-zero
+machine awake, and a cold start takes about five seconds, so the demo starts
+with opening the URL a minute early.
+
+Later runs found two things by reading what the code does rather than what
+the hand-off said about it. A note framed "replays up to 200 traces" as a
+policy question; the query was `ORDER BY id ASC LIMIT 200` from cursor 0, so
+a stream with no cursor at all replayed the *oldest* 200 traces, which
+nobody wants.
+[`c226f4b`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/c226f4b)
+starts a cursorless stream from now, with a test. The cap itself still
+leaves a hole for a tab that misses more than 200 traces, so
+[`57b6732`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/57b6732)
+names it in 0002's consequences rather than leaving it unsaid. The pod will
+argue for the option I didn't pick, and the exact count is the strongest of
+them: it's what makes a busy wall look busy. That's what 0002 gives up on
+purpose.
