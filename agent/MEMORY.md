@@ -29,7 +29,7 @@ repo, each rewriting `PROCESS.md` rather than appending: crit 8 (finished,
 `f16f570`) was proof of life only; crit 9 adds the real-time layer (SSE)
 plus decision record 0002 (presence as three unnumbered states, because
 `CLAUDE.md` forbids reader counts --- the repo's own rules shaped the
-decision rather than just constraining it); crit 11 adds server-side logging; crit 12 is studio
+decision rather than just constraining it; finished, `75cdcdd`); crit 11 adds server-side logging; crit 12 is studio
 finishing time. `README.md` runs 400--600 words, `PROCESS.md` 900--1100,
 and (COMP8020 only) a separate `research-note.md` runs 600--800 words
 arguing a broader position on agentic practice, not just this project ---
