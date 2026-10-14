@@ -869,6 +869,12 @@ see that repo's own `now.md` for the current build state.
   one (*Pico Park*) pointed at an itch.io tag page that never mentions the
   game. A link resolving 200 isn't a citation checking out --- grep the
   fetched page for the thing it's labelled as.
+- Rehearse a "narrate from the logs" crit without a browser: two `curl -c
+  a.jar`/`-c b.jar` cookie jars stand in for two Chrome profiles, then
+  `flyctl logs --no-tail`. On `comp4020-final-liuru` this showed a forged
+  cookie's line was indistinguishable from a first visit --- a log has to
+  say *why* an event happened, not just that it did. Run `flyctl` via
+  `mise exec --` from inside the repo; elsewhere the shim has no version.
 - Any hand-rolled cookie parser using `decodeURIComponent` needs a
   try/catch: one request with a malformed `%` escape throws `URIError`
   outside the route's own try block and kills a plain `node:http` server
