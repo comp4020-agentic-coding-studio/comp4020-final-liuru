@@ -28,11 +28,19 @@ not to build a profile of them.
   gap, not a decision to leave unmade forever — revisit if the wall is ever
   exposed somewhere a stranger could actually find it and spam it.
 
+## Logging
+
+Every request and every event that changes or reads shared state logs one
+line via `src/log.ts`, naming the visitor by `visitorTag`, never the raw
+cookie (decision record 0003). A new route or event adds its line; nothing
+logs IPs, user agents or the cookie value.
+
 ## Enforced vs. judged
 
 `spec/*.test.ts` is the enforced list: valid kind, non-empty text, a 240
 character cap, live delivery and reconnect replay over `/events`, presence
-that counts visitors not tabs and never shows a number, and the two
+that counts visitors not tabs and never shows a number, identity and
+authorisation (`spec/identity.test.ts`, decision record 0003), and the two
 course-wide checks (`/` answers, `/readme/` publishes `README.md`). Everything else — whether the wall still feels like
 the six similes rather than a generic guestbook — is a judgement call, made
 here and revisited each crit, not something a test can catch.

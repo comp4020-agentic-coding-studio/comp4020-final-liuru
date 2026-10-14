@@ -41,12 +41,14 @@ why, and what that costs.
 
 ## What's enforced vs. what's judged
 
-Enforced, in `spec/`: a trace needs a real kind (one of the six) and non-empty
+Enforced, in `spec/`: a trace needs one of the six kinds and non-empty
 text capped at 240 characters, or the server silently drops it rather than
-storing garbage. Traces persist in SQLite on the app's own volume, so they
-survive a restart or a redeploy — not just the current process.
+storing garbage. Only the poster's own view marks a trace as theirs, an
+identity the server never issued is replaced rather than adopted, and no
+route edits or deletes a trace. Traces persist in SQLite on the app's volume,
+across restarts and redeploys.
 
-Judged, by me now and by a reader later: whether the wall actually feels like
+Judged, by me now and by a reader later: whether the wall feels like
 the six similes it's named after, not a message board with a select box on
 it, and whether the plain list stays legible once real people have used it.
 I haven't built moderation, rate limiting, or a way to remove a trace — for a
@@ -55,8 +57,9 @@ need any of them, not that I've reasoned my way out of needing them forever.
 
 ## What I deliberately didn't build yet
 
-No visible distinction between visitors beyond "yours vs. everyone else's"
-(no names, colours, or avatars — deferred until there's an actual multi-user feature that needs it), no server-side logging
-beyond what Fly captures by default (crit 11), and no moderation. All three are
-real gaps, not oversights, and each has a crit on the course's own schedule
-that's the right place to close it.
+No visible distinction between visitors beyond "yours vs. everyone else's":
+no names, colours, or avatars, until a feature needs one. A visitor is an
+anonymous server-issued cookie, and the log names each by a short hash of
+it, so I can tell who did what without the wall showing anyone;
+[decision record 0003](docs/decisions/0003-a-person-is-a-cookie.md)
+argues why.
