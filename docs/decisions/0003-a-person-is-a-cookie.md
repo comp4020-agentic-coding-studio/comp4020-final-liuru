@@ -74,6 +74,9 @@ forge a second log line.
 - At the crit I tell the two classmates apart by their hashes, not their
   names. The first `visitor_new` line after each opens the URL is the
   introduction; from there every line carries the same eight characters.
+  `cookie=rejected` on that line means a visitor cookie arrived that this
+  server never issued, so a forged id is visible rather than looking like a
+  first visit.
 - Clearing cookies or switching browsers makes you someone new, and you lose
   the "yours" marking on old traces. There's no recovery, since there's
   nothing to recover with. That's the cost of having no account.

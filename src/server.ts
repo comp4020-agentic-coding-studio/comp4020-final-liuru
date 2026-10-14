@@ -85,7 +85,9 @@ const server = createServer(async (req, res) => {
   const visitorId = existingVisitor ?? randomUUID();
   const visitor = visitorTag(visitorId);
   const setCookie = existingVisitor ? undefined : visitorCookie(visitorId);
-  if (setCookie) logEvent(reqId, "visitor_new", { visitor });
+  // "rejected" means a visitor cookie arrived but wasn't one we issued: a
+  // forged or mangled id, worth telling apart from a first visit
+  if (setCookie) logEvent(reqId, "visitor_new", { visitor, cookie: cookieVisitor ? "rejected" : "none" });
   // /events stays open, so its line is written when it opens, not on finish
   if (url.pathname !== "/events") {
     res.on("finish", () => {

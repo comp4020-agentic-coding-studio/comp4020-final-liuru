@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 
 // One line per event on stdout, which is what `flyctl logs` shows:
 //
+//   [3f9a1c] visitor_new visitor=7c2e91ab cookie=none
 //   [3f9a1c] trace_posted visitor=7c2e91ab trace=42 kind=dew text="..."
 //   [3f9a1c] POST /trace 303 4ms visitor=7c2e91ab
 //
