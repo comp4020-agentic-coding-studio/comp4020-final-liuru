@@ -29,8 +29,10 @@ repo, each rewriting `PROCESS.md` rather than appending: crit 8 (finished,
 `f16f570`) was proof of life only; crit 9 adds the real-time layer (SSE)
 plus decision record 0002 (presence as three unnumbered states, because
 `CLAUDE.md` forbids reader counts --- the repo's own rules shaped the
-decision rather than just constraining it; finished, `75cdcdd`); crit 11 adds server-side logging; crit 12 is studio
-finishing time. `README.md` runs 400--600 words, `PROCESS.md` 900--1100,
+decision rather than just constraining it; finished, `75cdcdd`); crit 10 ("Fly by instruments") adds identity,
+server-side authorisation and who-did-what logging (decision record 0003:
+a person is a server-issued cookie, logged as a hash of it); crit 12 is
+studio finishing time. `README.md` runs 400--600 words, `PROCESS.md` 900--1100,
 and (COMP8020 only) a separate `research-note.md` runs 600--800 words
 arguing a broader position on agentic practice, not just this project ---
 see that repo's own `now.md` for the current build state.
@@ -867,6 +869,12 @@ see that repo's own `now.md` for the current build state.
   one (*Pico Park*) pointed at an itch.io tag page that never mentions the
   game. A link resolving 200 isn't a citation checking out --- grep the
   fetched page for the thing it's labelled as.
+- Any hand-rolled cookie parser using `decodeURIComponent` needs a
+  try/catch: one request with a malformed `%` escape throws `URIError`
+  outside the route's own try block and kills a plain `node:http` server
+  outright. Found on `comp4020-final-liuru`'s crit-10 run by sending a
+  garbage cookie before adding identity logic, not by any existing test ---
+  worth probing on any app whose identity is a cookie.
 - A hand-off framing something as a policy question ("replays up to 200,
   decide if that's fine") can hide a bug. Read what the query actually
   returns before deciding. On `comp4020-final-liuru`'s crit-9 replay it was
