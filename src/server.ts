@@ -3,11 +3,13 @@ import { readFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { marked } from "marked";
 import { addTrace, isKind, recentTraces, type Trace, tracesAfter } from "./db.ts";
+import { logEvent, logRequest, requestId, visitorTag } from "./log.ts";
 import { presenceText, renderReadme, renderTrace, renderWall } from "./templates.ts";
 
 const PORT = Number(process.env.PORT ?? 8080);
 const VISITOR_COOKIE = "visitor";
 const FIVE_YEARS = 60 * 60 * 24 * 365 * 5;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 function parseCookies(header: string | undefined): Record<string, string> {
   const out: Record<string, string> = {};
@@ -15,7 +17,13 @@ function parseCookies(header: string | undefined): Record<string, string> {
   for (const part of header.split(";")) {
     const eq = part.indexOf("=");
     if (eq === -1) continue;
-    out[part.slice(0, eq).trim()] = decodeURIComponent(part.slice(eq + 1).trim());
+    const value = part.slice(eq + 1).trim();
+    try {
+      out[part.slice(0, eq).trim()] = decodeURIComponent(value);
+    } catch {
+      // a malformed escape is just a cookie we don't recognise, not a crash
+      out[part.slice(0, eq).trim()] = value;
+    }
   }
   return out;
 }
@@ -65,11 +73,26 @@ setInterval(() => {
 }, 20_000).unref();
 
 const server = createServer(async (req, res) => {
+  const started = performance.now();
+  const reqId = requestId();
   const url = new URL(req.url ?? "/", `http://${req.headers.host}`);
   const cookies = parseCookies(req.headers.cookie);
-  const existingVisitor = cookies[VISITOR_COOKIE];
+  // Only an id this server could have issued counts; anything else (a
+  // hand-typed "ada", a mangled value) gets a fresh identity, so nobody picks
+  // their own id (decision record 0003).
+  const cookieVisitor = cookies[VISITOR_COOKIE];
+  const existingVisitor = cookieVisitor && UUID.test(cookieVisitor) ? cookieVisitor : undefined;
   const visitorId = existingVisitor ?? randomUUID();
+  const visitor = visitorTag(visitorId);
   const setCookie = existingVisitor ? undefined : visitorCookie(visitorId);
+  if (setCookie) logEvent(reqId, "visitor_new", { visitor });
+  // /events stays open, so its line is written when it opens, not on finish
+  if (url.pathname !== "/events") {
+    res.on("finish", () => {
+      const ms = Math.round(performance.now() - started);
+      logRequest(reqId, req.method ?? "?", url.pathname, res.statusCode, ms, visitor);
+    });
+  }
 
   try {
     if (url.pathname === "/" && req.method === "GET") {
@@ -89,7 +112,13 @@ const server = createServer(async (req, res) => {
       const text = (params.get("text") ?? "").trim().slice(0, 240);
       if (isKind(kind) && text.length > 0) {
         const trace = addTrace(visitorId, kind, text);
+        logEvent(reqId, "trace_posted", { visitor, trace: trace.id, kind, text });
         for (const l of listeners) sendTrace(l, trace);
+      } else {
+        logEvent(reqId, "trace_dropped", {
+          visitor,
+          reason: isKind(kind) ? "empty text" : "unknown kind",
+        });
       }
       res.writeHead(303, {
         location: "/",
@@ -117,9 +146,13 @@ const server = createServer(async (req, res) => {
       }
       listeners.add(listener);
       broadcastPresence();
+      logRequest(reqId, "GET", url.pathname, 200, Math.round(performance.now() - started), visitor);
+      logEvent(reqId, "stream_opened", { visitor, open: listeners.size });
       req.on("close", () => {
         listeners.delete(listener);
         broadcastPresence();
+        const seconds = Math.round((performance.now() - started) / 1000);
+        logEvent(reqId, "stream_closed", { visitor, after: `${seconds}s`, open: listeners.size });
       });
       return;
     }
@@ -135,7 +168,8 @@ const server = createServer(async (req, res) => {
     res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
     res.end("not found");
   } catch (err) {
-    console.error(err);
+    logEvent(reqId, "error", { visitor, path: url.pathname });
+    console.error(`[${reqId}]`, err);
     res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
     res.end("internal error");
   }

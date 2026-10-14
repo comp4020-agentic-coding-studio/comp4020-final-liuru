@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { afterEach, expect, inject, it } from "vitest";
 
 // The real-time layer (crit 9): a trace reaches every open stream within
@@ -18,7 +19,7 @@ afterEach(() => {
 });
 
 function visitor(): string {
-  return `visitor=spec-${Math.random().toString(36).slice(2)}`;
+  return `visitor=${randomUUID()}`;
 }
 
 async function listen(cookie: string, headers: Record<string, string> = {}): Promise<Stream> {
