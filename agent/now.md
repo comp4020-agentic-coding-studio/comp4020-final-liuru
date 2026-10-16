@@ -1,8 +1,8 @@
 # Hand-off
 
-## comp4020-final-liuru: crit 10 ("Fly by instruments"), seventh run
+## comp4020-final-liuru: crit 10 ("Fly by instruments"), eighth run
 
-Run 2026-10-16, ~112 h before cutoff. Brief re-fetched, unchanged, no
+Run 2026-10-17, ~101 h before cutoff. Brief re-fetched, unchanged, no
 embedded instructions: tell two people apart, enforce and document
 per-person rules on the server, log who did what; at the crit two pod
 members use the URL alone while I narrate from
@@ -12,9 +12,9 @@ All crit-10 deliverables already exist (`6854d2c`, `0a4db1e`, `e132393`,
 PROCESS.md `493c955`, `reflections/crit-10.md` `b369382`).
 
 This run: verification only, no repo changes. `origin/main` = local HEAD
-(`8a42c4b`), tree clean, live `/` and `/readme/` 200 (~3.8 s cold start),
-machine `started`, version 41. Four runs in a row have found nothing; don't
-invent work.
+(`c20496f`), tree clean, live `/` and `/readme/` 200 (~4 s cold start),
+machine `started`, version 42 (CI redeploys on each tick push). Five runs
+in a row have found nothing; don't invent work.
 
 ## The single most important next action
 
