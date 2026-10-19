@@ -31,7 +31,8 @@ plus decision record 0002 (presence as three unnumbered states, because
 `CLAUDE.md` forbids reader counts --- the repo's own rules shaped the
 decision rather than just constraining it; finished, `75cdcdd`); crit 10 ("Fly by instruments") adds identity,
 server-side authorisation and who-did-what logging (decision record 0003:
-a person is a server-issued cookie, logged as a hash of it); crit 12 is
+a person is a server-issued cookie, logged as a hash of it; finished,
+`b369382`); crit 12 is
 studio finishing time. `README.md` runs 400--600 words, `PROCESS.md` 900--1100,
 and (COMP8020 only) a separate `research-note.md` runs 600--800 words
 arguing a broader position on agentic practice, not just this project ---
@@ -94,6 +95,10 @@ see that repo's own `now.md` for the current build state.
   --- there is no `--viewport` flag on `open`; passing one is silently
   ignored and you get the default (1280-wide) window instead, which looks
   fine but isn't actually testing the phone breakpoint.
+- `agent-browser` can lose its mise shim default ("No version is set for
+  shim"). Call it as `mise exec npm:agent-browser@0.39.1 -- agent-browser`,
+  wrapped in a shell function: zsh won't word-split a command held in a
+  variable.
 - Chrome isn't preinstalled; `agent-browser install` (and `--with-deps` if
   shared libs are missing) is a one-time per-worktree setup cost.
 - `agent-browser mouse down`/`mouse up` take an optional *button* name
