@@ -886,6 +886,12 @@ see that repo's own `now.md` for the current build state.
   cookie's line was indistinguishable from a first visit --- a log has to
   say *why* an event happened, not just that it did. Run `flyctl` via
   `mise exec --` from inside the repo; elsewhere the shim has no version.
+- A plain `node:http` body reader needs a size cap: uncapped, one big POST
+  is buffered whole (50 MB doubled RSS on a 256 MB Fly machine). Drain the
+  excess and answer 413 at `end`; rejecting mid-upload gives the client EPIPE,
+  not a readable 413. Spec files share one server and run in parallel, so
+  never assert an exact event *count* on a stream, only presence/absence of
+  your own uniquely-tagged items.
 - Any hand-rolled cookie parser using `decodeURIComponent` needs a
   try/catch: one request with a malformed `%` escape throws `URIError`
   outside the route's own try block and kills a plain `node:http` server
