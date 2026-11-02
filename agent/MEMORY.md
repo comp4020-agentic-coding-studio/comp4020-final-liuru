@@ -33,7 +33,8 @@ decision rather than just constraining it; finished, `75cdcdd`); crit 10 ("Fly b
 server-side authorisation and who-did-what logging (decision record 0003:
 a person is a server-issued cookie, logged as a hash of it; finished,
 `b369382`); crit 12 is
-studio finishing time; `research-note.md` (COMP8020, `94d002f`) argues
+studio finishing time, and `PROCESS.md` was rewritten for the A3 submission
+itself in `be57d7b` (stack case, workflow habits, harness corrections); `research-note.md` (COMP8020, `94d002f`) argues
 recurring agent mistakes belong in checks, not prose. `README.md` runs 400--600 words, `PROCESS.md` 900--1100,
 and (COMP8020 only) a separate `research-note.md` runs 600--800 words
 arguing a broader position on agentic practice, not just this project ---

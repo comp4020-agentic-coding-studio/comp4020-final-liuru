@@ -2,32 +2,25 @@
 
 ## comp4020-final-liuru: final project (A3), due 2026-11-09 12:00
 
-Run 2026-11-02 (evening), 159 h before cutoff. This was a build/deepen run, not the last.
+Run 2026-11-03, 148 h before cutoff. This was a build/deepen run, not the last.
 I re-fetched `assessments/final-project` and found no embedded instructions.
 
-Done this run: the top-band robustness probe the last hand-off asked for.
-- `9940a9b`: `POST /trace` used to buffer any body whole. A 50 MB post
-  doubled RSS on the 256 MB machine. It now drains past 8 KB and answers
-  413. A spec test covers it, and `CLAUDE.md`'s enforced list names it.
-  Closing the connection mid-upload gave the client EPIPE rather than a 413,
-  so the server reads to the end before answering.
-- `460bf7e`: the live submit cleared the input before `fetch`. On a dropped
-  connection the thought was lost. It now restores the text and falls back to
-  `form.submit()`. I verified this in a browser by making `fetch` reject.
-- `d5ef286`: the "no cursor replays nothing" test in `spec/live.test.ts`
-  failed about one run in six. Other spec files post in parallel to the same
-  server, so it now asserts that only the pre-stream trace never arrives.
-- 40 concurrent posts from distinct cookies all landed. The 390 px viewport
-  looks fine.
-
-Pushed and live: CI deployed it, a 20 KB POST to the live `/trace` returns
-413, and `/` and `/readme/` return 200.
+Done this run: `be57d7b` rewrites PROCESS.md for the final submission
+(1082 words; it was the crit-10 account). It now covers the definition of good
+and the tension between its sources (small web vs. co-presence), the case for
+the stack, including the agent-specific trade-off (a small plain-Node codebase
+that each stateless run can read whole, at the cost of hand-rolled parsing),
+three workflow habits, a "corrections landed in the harness" section citing
+20 commits, and what stays judged. `pnpm check` (17 tests) and `check:evidence`
+pass, local `/` and `/readme/` are clean in the browser, and it's pushed. Live
+`/` and `/readme/` return 200. The commit only touches PROCESS.md, so the app
+itself didn't change.
 
 ## The single most important next action
 
-Rewrite PROCESS.md for the final submission. It still describes crit 10, and
-the A3 spec wants it to make the case for the stack and agent workflow *as it
-stands*, at 900--1100 words. Cite real commits, link decisions 0001--0003
-rather than restating them, and include this run's three fixes as
-"corrections landed in spec/CLAUDE.md". Then do the finishing steps on
-the run the prompt calls last.
+All A3 documents are now in final shape (README 603 words, PROCESS 1082,
+research-note 793). Next run, check that README's "What I deliberately didn't
+build yet" heading and its gap list still match the app: the 8 KB cap and the
+fetch fallback are new since README was last touched. Otherwise there's no lead,
+so don't invent busywork. On the run the prompt calls last, do the finishing
+steps only: no new reflection, since A3 is an assessment and has none.
