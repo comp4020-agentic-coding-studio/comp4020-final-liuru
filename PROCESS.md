@@ -1,112 +1,144 @@
 # Process overview
 
-This is the crit-10 account. Crits 8 and 9 built a deployed wall where a
-visitor tags a short thought as one of the Diamond Sūtra's six similes, then
-made it live over Server-Sent Events with a presence line that never shows a
-number; those stories are in this file's history at
+This is the final-project account: why the wall is built the way it is, how
+the work was run, and where corrections landed. The crit-by-crit stories are
+in this file's history at
 [`f16f570`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/f16f570)
-and
-[`75cdcdd`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/75cdcdd).
-The work runs as a series of stateless Claude Code invocations, each starting
-from `memory/` (this agent's notes, outside the repo) and the crit's JSON
-brief. Commit links go to
+(crit 8),
+[`bf05164`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/bf05164)
+(crit 9) and
+[`493c955`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/493c955)
+(crit 10). Commit links go to
 [the repo's history](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commits/main).
 
-## From brief to decision
+## From brief to a definition of good
 
-The crit-10 brief asks for three things. The app has to tell two people
-apart, each in their own browser with no shared cookies. What each may see
-and change has to be decided, checked on the server and written down. And at
-the crit I don't touch the app: two pod members use the URL alone while I
-narrate what they're doing from `flyctl logs`. If I can't tell them apart in
-the logs, or one can change what belongs to the other, that's the finding.
+The brief asks what would make the app good rather than what it should do.
+I answered the first question before writing code. The wall's premise comes
+from this agent's own name, 六如, the Diamond Sūtra's six similes for things
+that pass. A wall whose premise is "everything here is already passing"
+can't have accounts, streaks or a popularity sort without contradicting
+itself, so the theme rules out most of what the median multi-user app
+reaches for.
 
-The wall half-had this already. Since crit 8 a visitor has been a random id
-in a long-lived `HttpOnly` cookie, used only to mark your own traces as
-yours. But the server logged nothing except its port and uncaught errors, so
-the narration the brief asks for was impossible.
+The sources README cites are Sloan's home-cooked app, the Small Technology
+Foundation's small web and *Pico Park*'s couch co-op. They pulled in two
+directions, and I had to take a position between them. Sloan and the small
+web argue for software that is finished and doesn't chase anyone. The brief
+and *Pico Park* argue for co-presence, an app that is better because others
+are in it right now. The wall takes co-presence
+in its smallest form: traces arrive live, and one line of text says whether
+you're alone, never how many are here.
+[`ff0b374`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/ff0b374)
+wrote that argument into README and turned it into `CLAUDE.md`'s rules in
+the same commit, so the argument had rules attached from the start.
 
-[Decision record 0003](docs/decisions/0003-a-person-is-a-cookie.md), in
-[`0a4db1e`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/0a4db1e),
-weighs three answers to "who counts as a person": an account, a pseudonym
-typed on first visit, and the anonymous browser cookie. As in crit 9, the
-repo's own `CLAUDE.md` did most of the deciding. It forbids accounts, and a
-pseudonym is the start of the profile README says the cookie exists to
-avoid. The brief's "anything they need to get in has to be on the page"
-pointed the same way, since the cookie needs no step at all. The cost is
-named in the record: clear your cookies and you're someone new, with no way
-back to your old traces.
+## The case for the stack
 
-Authorisation turned out to be the absence of a route. `CLAUDE.md` makes a
-trace permanent once posted, so nobody may change or remove one, their own
-included. The server answers four routes and nothing else, so an edit or
-delete attempt gets a 404, and "yours" is computed per request on the
-server, changing only how a trace renders for you, never what you can do to
-it.
+[Decision record 0001](docs/decisions/0001-plain-node-and-sqlite.md) has
+the full reasoning. In short: plain `node:http`, template-literal HTML and
+`better-sqlite3` on the Fly volume, with no framework and no build step
+([`bf52500`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/bf52500)).
+`fly.toml` fixes one 256 MB machine and one volume, which rules out a
+separate database server. The app has four routes, and a framework would be
+more code than the routes it serves.
 
-## Building the instruments
+The trade-off I weighed hardest was agent-specific. A framework gives an
+agent a well-worn path, so it writes plausible code quickly. It also gives
+it a large surface to be confidently wrong about. With a few hundred lines
+of plain Node, each stateless run can read the entire server before it
+changes anything, and a reviewer can too. The cost is that everything is
+hand-written: body parsing, cookies, routing. That cost turned up in later
+commits, as two failures a framework would have handled for me (below).
 
-[`6854d2c`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/6854d2c)
-adds `src/log.ts`: one line per request and per event on stdout, tagged
-with a short request id so a `POST /trace` and the `trace_posted` inside it
-group together. The question that shaped it was what the log must never
-hold. The cookie is the only credential a visitor has, so whoever reads the
-log could post as them. The log names a visitor by the first eight hex
-digits of the cookie's SHA-256 instead, enough to tell two apart and useless
-for impersonating either. No IPs or user agents, for the same profile
-reason. A trace's text is logged, since it's already public on the wall, but
-escaped and quoted, so a newline in it can't forge a second log line.
+Real-time is Server-Sent Events from the same server
+([`f498c1f`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/f498c1f)).
+Visitors only need the server to push to them; posting is an ordinary
+form POST, so WebSockets' two-way channel would add nothing, and the page
+still works with JavaScript off. 0001 had named SSE as the plan in crit 8,
+along with the conditions under which it would stop being enough. None came
+up, so crit 9 needed a status line in 0001, not a new record. The in-memory
+fan-out is only correct because `fly.toml` pins one machine;
+[0002](docs/decisions/0002-presence-without-a-count.md) says so.
 
-The same commit tightens identity: the server now only accepts a cookie
-shaped like an id it could have issued. A hand-typed `visitor=ada` is
-replaced rather than adopted, so nobody picks their own identity.
+## The agent workflow
 
-Before writing any of that, I sent the running server a cookie with a broken
-percent-escape, to see what a stranger's garbage would do to the code I was
-about to change. It killed the process. `decodeURIComponent` threw a
-`URIError` outside the route's own error handling, and a plain `node:http`
-server has nothing above that to catch it, so one malformed request would
-have taken the wall down for everyone until Fly restarted the machine. The
-fix is a try/catch in the cookie parser, and `spec/identity.test.ts` now
-sends that cookie and checks the server answers the next request too. The
-same file pins down the rest of 0003: two cookies see the same trace with
-"mine" on only the poster's copy, an invented id gets a fresh one back, and
-`DELETE`, `PUT` and `POST /trace/<id>` all 404 while the trace survives.
-`CLAUDE.md`'s enforced list names the file, and its logging rule says every
-new route adds its line, so a future feature can't go dark in the log.
+Every run is a stateless Claude Code invocation. Continuity is the commit
+history plus `memory/`, this agent's notes outside the repo: a hand-off
+naming one next action, and a curated list of lessons from earlier runs.
+Three habits shaped the work more than any single prompt.
 
-## Rehearsing the narration
+**Decision record before code.** For presence (0002,
+[`4b524f9`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/4b524f9))
+and identity (0003,
+[`0a4db1e`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/0a4db1e))
+the record came first, so the implementation had something to be held to.
+Both times `CLAUDE.md` did most of the deciding. It forbids reader counts,
+which turned "what should presence show?" into "what is the smallest honest
+answer to *am I alone*?". It forbids accounts, which left an anonymous
+cookie as the only identity consistent with README.
 
-Tests prove the rules hold. They don't prove the log reads well enough to
-narrate from, which is what the crit actually tests. So I rehearsed it
-against the deployed app without a browser: two `curl` cookie jars stand in
-for the two Chrome profiles. Each opened `/events`, each posted a trace, and
-one then sent a forged `visitor=ada`. Then I read `flyctl logs --no-tail`
-cold, as I will at the crit.
+**A different category each run.** Most of what later runs found was
+invisible to a green `pnpm check`: dark-mode contrast at 3.3:1
+([`c628797`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/c628797)),
+a highlight that only meant something visually
+([`b953074`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/b953074)),
+and a citation whose link resolved but didn't name the game
+([`61c58f8`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/61c58f8)).
 
-The two visitors came apart cleanly by hash, from their first `visitor_new`
-line through their stream opening and their posts. The forgery didn't. The
-server did the right thing, replacing the cookie, but its log line was a
-plain `visitor_new`, identical to a first visit. Narrating from that, I'd
-have said "a third person just arrived" when what happened was someone
-trying to be someone they weren't, the exact event the brief's failure
-condition is about.
+**Verify as the marker will.** Before the first deploy I built the real
+Dockerfile and ran the suite against the container, the way CI does. For
+crit 10 I rehearsed the log narration with two `curl` cookie jars and read
+`flyctl logs` cold. That rehearsal showed a forged cookie logged exactly
+like a first visit, which
 [`e132393`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/e132393)
-adds `cookie=none` or `cookie=rejected` to that line and a sentence to 0003
-saying what each means. CI deployed it and the live log now says which.
+fixed.
 
-The rehearsal left two permanent traces on the live wall, labelled as
-rehearsal. There's no delete, by design, so they stay; that's a small,
-honest instance of the cost 0003 names.
+## Corrections landed in the harness
 
-## What the crit will test
+When a run got something wrong, the fix went into `spec/` or `CLAUDE.md`
+where it could, not just into the code. `research-note.md` argues this as
+a general position.
 
-Before the crit I'll open the URL a minute early, since a cold start takes
-about four seconds. The first `visitor_new` after each classmate opens the
-page is their introduction, and from there every line they cause carries the
-same eight characters. If either tries to change the other's trace there's no
-route to try it on, and if either edits their cookie the log says
-`cookie=rejected`. The pod will argue for the option I didn't pick, most
-likely a pseudonym, since a name in the log narrates better than a hash.
-That's real, and 0003 gives it up on purpose: the wall would rather be hard
-to narrate than start keeping names.
+- **Untested promises.** `CLAUDE.md` called the 240-character cap enforced
+  when nothing tested it.
+  [`51e7a8f`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/51e7a8f)
+  added the test. The 300-character string it left on the wall then blew a
+  grid column out to 2213 px on a phone, which
+  [`051ec4d`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/051ec4d)
+  fixed.
+- **Hand-rolled code under hostile input.** A malformed percent-escape in a
+  cookie killed the server outright. `spec/identity.test.ts` now sends one
+  and checks the next request is still answered
+  ([`6854d2c`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/6854d2c)).
+  A 50 MB POST doubled the machine's memory.
+  [`9940a9b`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/9940a9b)
+  caps bodies at 8 KB with a 413, adds a test, and names the cap in
+  `CLAUDE.md`'s enforced list. Both were costs of choosing plain Node.
+- **A policy question that was a bug.** A hand-off called "replays up to
+  200 traces" a policy to decide. The query actually replayed the *oldest*
+  200 to any stream that arrived without a cursor.
+  [`c226f4b`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/c226f4b)
+  fixed it with a test, and
+  [`57b6732`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/57b6732)
+  recorded the remaining cap in 0002.
+- **A flaky test.** One live test failed about one run in six, because
+  other spec files post to the same server in parallel.
+  [`d5ef286`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/d5ef286)
+  asserts only on its own uniquely tagged trace.
+- **A slow connection.** The top band asks for use the app wasn't designed
+  for. The live submit cleared the input before `fetch` returned, so a
+  dropped connection lost the thought.
+  [`460bf7e`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/460bf7e)
+  restores the text and falls back to a plain form post. I checked it in a
+  browser by forcing `fetch` to reject. Forty concurrent posts from distinct
+  cookies all landed.
+
+## What stays judged
+
+Whether the wall feels like the six similes
+rather than a message board with a select box is a judgement, made at each
+crit. So is whether a plain reverse-chronological list stays legible once a
+room full of people has used it, which the showcase will test. No moderation and no delete remain deliberate gaps, named in README. A
+spammed wall at the showcase would be the evidence that one of them needs
+an argument of its own.
