@@ -57,3 +57,15 @@ it("caps a trace's text at 240 characters rather than storing it whole", async (
   expect(page).toContain(over.slice(0, 240));
   expect(page).not.toContain(over.slice(0, 241));
 });
+
+it("refuses an oversized body instead of buffering it, and keeps answering", async () => {
+  // a trace is capped at 240 characters, so megabytes of form body can only
+  // be an attack on the machine's 256 MB, not a thought
+  const res = await fetch(new URL("/trace", baseUrl), {
+    method: "POST",
+    body: new URLSearchParams({ kind: "dew", text: "x".repeat(2 * 1024 * 1024) }),
+    redirect: "manual",
+  });
+  expect(res.status).toBe(413);
+  expect((await fetch(new URL("/", baseUrl))).status).toBe(200);
+});

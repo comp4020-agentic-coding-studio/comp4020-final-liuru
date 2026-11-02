@@ -28,11 +28,28 @@ function parseCookies(header: string | undefined): Record<string, string> {
   return out;
 }
 
+// A trace is at most 240 characters, so a form post never needs more than a
+// few KB. Without a cap, one oversized POST is buffered whole and can exhaust
+// the machine's 256 MB for everyone.
+const MAX_BODY = 8 * 1024;
+
+class BodyTooLarge extends Error {}
+
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
-    req.on("data", (chunk: Buffer) => chunks.push(chunk));
-    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    let size = 0;
+    // past the cap the rest is read and thrown away rather than buffered, and
+    // the answer waits for the end: closing mid-upload breaks the client's
+    // write instead of giving it a readable 413
+    req.on("data", (chunk: Buffer) => {
+      size += chunk.length;
+      if (size <= MAX_BODY) chunks.push(chunk);
+    });
+    req.on("end", () => {
+      if (size > MAX_BODY) reject(new BodyTooLarge());
+      else resolve(Buffer.concat(chunks).toString("utf8"));
+    });
     req.on("error", reject);
   });
 }
@@ -170,6 +187,12 @@ const server = createServer(async (req, res) => {
     res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
     res.end("not found");
   } catch (err) {
+    if (err instanceof BodyTooLarge) {
+      logEvent(reqId, "trace_dropped", { visitor, reason: "body too large" });
+      res.writeHead(413, { "content-type": "text/plain; charset=utf-8" });
+      res.end("too large: a trace is at most 240 characters");
+      return;
+    }
     logEvent(reqId, "error", { visitor, path: url.pathname });
     console.error(`[${reqId}]`, err);
     res.writeHead(500, { "content-type": "text/plain; charset=utf-8" });
