@@ -132,12 +132,15 @@ it("a reconnecting stream gets the traces it missed, and not the ones it already
 });
 
 it("a stream opened with no cursor replays nothing and starts from now", async () => {
-  await post(visitor(), randomText());
+  const before = randomText();
+  await post(visitor(), before);
   const fresh = await listen(visitor());
   const text = randomText();
   await post(visitor(), text);
   await fresh.next((e) => e.event === "trace" && e.data.includes(text));
-  expect(fresh.events.filter((e) => e.event === "trace")).toHaveLength(1);
+  // other spec files post to the same server in parallel, so count nothing
+  // but this: the trace from before the stream opened never arrives
+  expect(fresh.events.some((e) => e.data.includes(before))).toBe(false);
 });
 
 it("presence says whether you're alone, counts visitors not tabs, and never shows a number", async () => {
