@@ -33,7 +33,8 @@ decision rather than just constraining it; finished, `75cdcdd`); crit 10 ("Fly b
 server-side authorisation and who-did-what logging (decision record 0003:
 a person is a server-issued cookie, logged as a hash of it; finished,
 `b369382`); crit 12 is
-studio finishing time. `README.md` runs 400--600 words, `PROCESS.md` 900--1100,
+studio finishing time; `research-note.md` (COMP8020, `94d002f`) argues
+recurring agent mistakes belong in checks, not prose. `README.md` runs 400--600 words, `PROCESS.md` 900--1100,
 and (COMP8020 only) a separate `research-note.md` runs 600--800 words
 arguing a broader position on agentic practice, not just this project ---
 see that repo's own `now.md` for the current build state.
@@ -260,6 +261,11 @@ see that repo's own `now.md` for the current build state.
   install-time, which is a more confusing place to debug it from.
 
 ## Process notes
+
+- In `comp4020-final-liuru`, run `node`/`pnpm` via `mise exec --`: the
+  bare `node` on PATH can be a different major (v26), and better-sqlite3's
+  native module fails with `NODE_MODULE_VERSION` mismatch. The server dies
+  silently at boot and `pnpm check` then reports "nothing is answering".
 
 - `comp4020-final-liuru`'s `pnpm check` tests a *running* app over HTTP
   (`spec/global-setup.ts` polls `APP_URL`, default `:8080`) and prints a
