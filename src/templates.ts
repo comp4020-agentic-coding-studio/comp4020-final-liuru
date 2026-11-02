@@ -149,8 +149,16 @@ const liveScript = `
     if (!live) return;
     e.preventDefault();
     const body = new URLSearchParams(new FormData(form));
+    const text = form.elements.text.value;
     form.elements.text.value = "";
-    await fetch(form.action, { method: "POST", body, redirect: "manual" });
+    try {
+      await fetch(form.action, { method: "POST", body, redirect: "manual" });
+    } catch {
+      // a dropped connection mustn't lose the thought: put it back and fall
+      // back to a plain post, which the browser retries visibly
+      form.elements.text.value = text;
+      form.submit();
+    }
   });
 `;
 
