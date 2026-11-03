@@ -252,6 +252,9 @@ see that repo's own `now.md` for the current build state.
   75 s `curl -sN` that stayed open with four heartbeats. An open stream also
   keeps a scale-to-zero machine awake. A cold start from `stopped` takes
   ~5 s for the first `GET /` (warm: ~30 ms), so wake it before a crit demo.
+  A much slower first hit (25 s seen) with proxy log lines "lease currently
+  held by Fly.io system" is Fly-side host work, not the app: read `flyctl
+  logs --no-tail` before chasing a startup regression.
 - `pnpm-workspace.yaml`'s `allowBuilds` allow-list (pnpm v10+ blocks a
   dependency's install/postinstall script by default) has to name *every*
   dependency with a native build step, not just whichever one the starter
