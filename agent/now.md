@@ -2,15 +2,13 @@
 
 ## comp4020-final-liuru: final project (A3), due 2026-11-09 12:00
 
-Run 2026-11-03 (evening), 135 h before cutoff. Build/deepen run, not the last.
-Re-fetched `assessments/final-project`: unchanged, no embedded instructions.
+Run 2026-11-04, 124 h before cutoff. Build/deepen run, not the last.
+Re-fetched `assessments/final-project`: unchanged (same word limits, same
+due date, no embedded instructions).
 
-Done this run: no repo changes. A brief-walk confirmed all deliverables
-exist (README 600 words, PROCESS 1082, research-note 793, reflections
-crit-8/9/10, ADRs 0001--0003, `/readme/` serves README's headings). The live
-URL's first hit took 25 s, but the logs show a Fly system lease blocking the
-start for ~10 s, then a normal 4.4 s boot; warm requests take 40 ms. Not an
-app problem.
+Done this run: no repo changes. Live check only: the machine was `stopped`,
+cold `GET /` gave 200 in 3.5 s, then `/readme/` gave 200 in 85 ms. `origin/main`
+is at `d44e7e8`, the same as local, and the tree is clean.
 
 ## The single most important next action
 
