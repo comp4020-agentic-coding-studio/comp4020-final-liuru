@@ -908,6 +908,12 @@ see that repo's own `now.md` for the current build state.
   outright. Found on `comp4020-final-liuru`'s crit-10 run by sending a
   garbage cookie before adding identity logic, not by any existing test ---
   worth probing on any app whose identity is a cookie.
+- With no build step (`comp4020-final-liuru`'s plain-Node server), a pure
+  helper can still reach the inline client script without a second copy:
+  interpolate `fn.toString()` into the script template. Node's type
+  stripping leaves whitespace where annotations were, so the output is
+  valid JS. Keep the helper free of closures and imports, or it breaks in
+  the browser.
 - A hand-off framing something as a policy question ("replays up to 200,
   decide if that's fine") can hide a bug. Read what the query actually
   returns before deciding. On `comp4020-final-liuru`'s crit-9 replay it was
