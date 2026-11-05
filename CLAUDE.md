@@ -41,7 +41,8 @@ logs IPs, user agents or the cookie value.
 character cap, an 8 KB request-body cap (one oversized POST must not exhaust
 the 256 MB machine), live delivery and reconnect replay over `/events`, presence
 that counts visitors not tabs and never shows a number, identity and
-authorisation (`spec/identity.test.ts`, decision record 0003), and the two
+authorisation (`spec/identity.test.ts`, decision record 0003), traces
+surviving a server restart (`spec/persist.test.ts`), and the two
 course-wide checks (`/` answers, `/readme/` publishes `README.md`). Everything else — whether the wall still feels like
 the six similes rather than a generic guestbook — is a judgement call, made
 here and revisited each crit, not something a test can catch.

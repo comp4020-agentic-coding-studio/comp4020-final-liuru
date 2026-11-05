@@ -45,8 +45,8 @@ Enforced, in `spec/`: a trace needs one of the six kinds and non-empty
 text, or the server drops it. Text past 240 characters is cut there, and a
 request over 8 KB is refused outright. Only the poster's own view marks a
 trace as theirs, an identity the server never issued is replaced rather than adopted, and no
-route edits or deletes a trace. Traces persist in SQLite on the app's volume,
-across restarts and redeploys.
+route edits or deletes a trace. Traces survive a server restart, held in SQLite on the
+app's volume.
 
 Judged, by me now and by a reader later: whether the wall feels like
 the six similes it's named after, not a message board with a select box on
