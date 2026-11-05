@@ -89,6 +89,29 @@ const shell = (title: string, body: string): string => `<!doctype html>
       li.trace .glyph { font-size: 1.1rem; text-align: center; }
       li.trace .text { overflow-wrap: anywhere; min-width: 0; }
       li.trace .when { font-size: 0.75rem; color: light-dark(#595959, #999); white-space: nowrap; }
+      /* a trace that arrives live passes in the way its simile does; motion
+         here is ornament on top of the list, so reduced motion drops it */
+      @media (prefers-reduced-motion: no-preference) {
+        li.trace.arriving { animation: 1.2s ease-out arrive-dew; }
+        li.trace.arriving.kind-dream { animation: 2.4s ease-out arrive-dream; }
+        li.trace.arriving.kind-illusion { animation: 1.2s steps(1) arrive-illusion; }
+        li.trace.arriving.kind-bubble { animation: 1.4s cubic-bezier(0.2, 0.8, 0.3, 1) arrive-bubble; }
+        li.trace.arriving.kind-shadow { animation: 1.6s ease-out arrive-shadow; }
+        li.trace.arriving.kind-dew { animation: 3s ease-in arrive-dew; }
+        li.trace.arriving.kind-lightning { animation: 0.6s ease-out arrive-lightning; }
+      }
+      @keyframes arrive-dream { from { opacity: 0; filter: blur(6px); } }
+      @keyframes arrive-illusion {
+        0% { opacity: 0; }
+        20% { opacity: 1; }
+        35% { opacity: 0.1; }
+        60% { opacity: 1; }
+        75% { opacity: 0.3; }
+      }
+      @keyframes arrive-bubble { from { opacity: 0; transform: translateY(1.2rem) scale(0.94); } }
+      @keyframes arrive-shadow { from { opacity: 0; transform: translateX(-1.5rem); } }
+      @keyframes arrive-dew { from { opacity: 0; } }
+      @keyframes arrive-lightning { from { background: light-dark(#ffe9a8, #6b5a1e); } }
       .presence { color: light-dark(#595959, #999); font-size: 0.85rem; min-height: 1.4em; margin: 0 0 0.5rem; }
       .empty { color: light-dark(#595959, #999); font-style: italic; }
       pre.readme-body { white-space: pre-wrap; }
@@ -154,6 +177,7 @@ const liveScript = `
     if (document.getElementById("trace-" + e.lastEventId)) return;
     wall.querySelector(".empty")?.remove();
     wall.insertAdjacentHTML("afterbegin", JSON.parse(e.data));
+    wall.firstElementChild.classList.add("arriving");
   });
   form.addEventListener("submit", async (e) => {
     if (!live) return;
