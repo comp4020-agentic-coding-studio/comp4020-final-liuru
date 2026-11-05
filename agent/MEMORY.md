@@ -873,6 +873,10 @@ see that repo's own `now.md` for the current build state.
   just trust the driver's documented guarantee) is the reusable part for
   any future small-app deliverable whose core feature is multiple strangers
   writing to one table.
+- Walk a brief's fixed requirements one by one against `spec/`, not just its
+  named artefacts: `comp4020-final-liuru`'s "persists" was claimed as
+  enforced in README for weeks with no test behind it. A test can boot its
+  own server copy on a temp `DATA_DIR` to test a restart; it runs fine in CI.
 - When a middle-of-week run has exhausted verification ideas against an
   unchanged repo, the better next lead is the brief itself, not a new
   axis of "compare two documents": list what it names as an artefact
