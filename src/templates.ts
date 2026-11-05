@@ -18,8 +18,10 @@ export function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function relativeTime(ms: number): string {
-  const seconds = Math.max(0, Math.round((Date.now() - ms) / 1000));
+// Pure, and also shipped to the browser verbatim (see liveScript), so an open
+// tab keeps "just now" honest without a second copy of the rule.
+function relativeTime(ms: number, now: number): string {
+  const seconds = Math.max(0, Math.round((now - ms) / 1000));
   if (seconds < 60) return "just now";
   const minutes = Math.round(seconds / 60);
   if (minutes < 60) return `${minutes}m ago`;
@@ -116,7 +118,7 @@ export function renderTrace(t: Trace, visitorId: string): string {
     <span class="glyph" aria-hidden="true" title="${meta.hanzi} ${escapeHtml(meta.label)}">${meta.glyph}</span>
     <span class="visually-hidden">tagged as ${escapeHtml(meta.label)}: </span>
     <span class="text">${mineLabel}${escapeHtml(t.text)}</span>
-    <span class="when">${relativeTime(t.createdAt)}</span>
+    <time class="when" datetime="${new Date(t.createdAt).toISOString()}">${relativeTime(t.createdAt, Date.now())}</time>
   </li>`;
 }
 
@@ -132,6 +134,14 @@ export function presenceText(others: number): string {
 // as it always has. With it, traces arrive over /events and posting doesn't
 // reload. If the stream is down, the form falls back to a plain post.
 const liveScript = `
+  ${relativeTime.toString()}
+  // times were true when the server rendered them; keep them true
+  setInterval(() => {
+    for (const t of document.querySelectorAll("time.when")) {
+      const next = relativeTime(Date.parse(t.dateTime), Date.now());
+      if (t.textContent !== next) t.textContent = next;
+    }
+  }, 30_000);
   const wall = document.querySelector("ul.wall");
   const presence = document.getElementById("presence");
   const form = document.querySelector("form.trace-form");
@@ -188,7 +198,7 @@ export function renderWall(traces: Trace[], visitorId: string): string {
         <button type="submit">let it go</button>
       </form>
       <p id="presence" class="presence" role="status"></p>
-      <ul class="wall" aria-live="polite" data-after="${traces[0]?.id ?? 0}">
+      <ul class="wall" aria-live="polite" aria-relevant="additions" data-after="${traces[0]?.id ?? 0}">
         ${items}
       </ul>
     </main>

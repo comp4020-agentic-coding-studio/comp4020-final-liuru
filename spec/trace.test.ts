@@ -69,3 +69,19 @@ it("refuses an oversized body instead of buffering it, and keeps answering", asy
   expect(res.status).toBe(413);
   expect((await fetch(new URL("/", baseUrl))).status).toBe(200);
 });
+
+it("stamps each trace with a machine-readable time, so an open tab can keep its age true", async () => {
+  const text = randomText();
+  const before = Date.now();
+  await fetch(new URL("/trace", baseUrl), {
+    method: "POST",
+    body: new URLSearchParams({ kind: "bubble", text }),
+    redirect: "manual",
+  });
+
+  const page = await (await fetch(new URL("/", baseUrl))).text();
+  const row = page.match(new RegExp(`<li[^>]*>(?:(?!</li>)[\\s\\S])*?${text}(?:(?!</li>)[\\s\\S])*?</li>`))?.[0] ?? "";
+  const stamp = row.match(/<time class="when" datetime="([^"]+)">/)?.[1] ?? "";
+  expect(Date.parse(stamp)).toBeGreaterThanOrEqual(before - 1000);
+  expect(Date.parse(stamp)).toBeLessThanOrEqual(Date.now() + 1000);
+});
