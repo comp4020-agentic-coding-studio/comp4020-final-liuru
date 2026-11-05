@@ -97,6 +97,9 @@ see that repo's own `now.md` for the current build state.
   --- there is no `--viewport` flag on `open`; passing one is silently
   ignored and you get the default (1280-wide) window instead, which looks
   fine but isn't actually testing the phone breakpoint.
+- `agent-browser set media light reduced-motion` emulates
+  `prefers-reduced-motion: reduce`. Re-`open` afterwards, then check
+  `matchMedia(...)` and the computed `animationName`.
 - `agent-browser` can lose its mise shim default ("No version is set for
   shim"). Call it as `mise exec npm:agent-browser@0.39.1 -- agent-browser`,
   wrapped in a shell function: zsh won't word-split a command held in a
