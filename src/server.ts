@@ -65,6 +65,8 @@ function visitorCookie(id: string): string {
 interface Listener {
   res: ServerResponse;
   visitorId: string;
+  // the presence line this tab was last told, so it hears only changes
+  presence?: string;
 }
 const listeners = new Set<Listener>();
 
@@ -78,10 +80,16 @@ function sendTrace(l: Listener, t: Trace): void {
 }
 
 // Counted by visitor cookie, not connection, so your own second tab never
-// shows up as "someone else".
+// shows up as "someone else". A tab hears only when its answer changes: in a
+// full room every arrival would otherwise re-announce the same line to every
+// screen reader, and cost a write per tab per arrival.
 function broadcastPresence(): void {
-  const others = new Set([...listeners].map((l) => l.visitorId)).size - 1;
-  for (const l of listeners) send(l.res, "presence", presenceText(others));
+  const text = presenceText(new Set([...listeners].map((l) => l.visitorId)).size - 1);
+  for (const l of listeners) {
+    if (l.presence === text) continue;
+    l.presence = text;
+    send(l.res, "presence", text);
+  }
 }
 
 setInterval(() => {
@@ -158,7 +166,7 @@ const server = createServer(async (req, res) => {
       // replay whatever this tab missed. A stream with neither has rendered
       // nothing, so it has missed nothing and starts from now.
       const lastEventId = req.headers["last-event-id"];
-      const listener = { res, visitorId };
+      const listener: Listener = { res, visitorId };
       if (url.searchParams.has("after") || lastEventId !== undefined) {
         const after = Math.max(Number(url.searchParams.get("after")) || 0, Number(lastEventId) || 0);
         for (const t of tracesAfter(after)) sendTrace(listener, t);

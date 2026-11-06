@@ -41,7 +41,9 @@ out visible reader counts and anything that exists to bring someone back.
 Option 4. Presence is counted by distinct visitor cookie, not by connection,
 so your own second tab never tells you "someone else is here". The line is a
 polite live region, so a screen-reader user gets the same signal as a
-sighted one when it changes, without being interrupted.
+sighted one when it changes, without being interrupted. Each tab is sent
+the line only when its own answer changes, so in a full room a newcomer
+doesn't re-announce "a few others" to everyone already there.
 
 New traces arrive live at the top of the list for everyone, quietly: no
 sound, no title-bar badge, no "new" highlight. A tab that drops and

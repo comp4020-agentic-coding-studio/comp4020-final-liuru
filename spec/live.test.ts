@@ -143,7 +143,7 @@ it("a stream opened with no cursor replays nothing and starts from now", async (
   expect(fresh.events.some((e) => e.data.includes(before))).toBe(false);
 });
 
-it("presence says whether you're alone, counts visitors not tabs, and never shows a number", async () => {
+it("presence says whether you're alone, counts visitors not tabs, speaks only on change, and never shows a number", async () => {
   const a = await listen(visitor());
   await a.next((e) => e.event === "presence" && e.data.includes("only one"));
 
@@ -151,14 +151,12 @@ it("presence says whether you're alone, counts visitors not tabs, and never show
   await listen(b);
   await a.next((e) => e.event === "presence" && e.data.includes("someone else"));
 
-  // b's second tab is still one visitor
+  // b's second tab is still one visitor, so a hears nothing about it: the
+  // next presence a gets is the change a third visitor makes
   const before = a.events.length;
   await listen(b);
-  await a.next((e) => e.event === "presence", before);
-  expect(a.events.at(-1)!.data).toContain("someone else");
-
   await listen(visitor());
-  await a.next((e) => e.event === "presence" && e.data.includes("a few others"));
+  expect(await a.next((e) => e.event === "presence", before)).toContain("a few others");
 
   for (const e of a.events.filter((e) => e.event === "presence")) {
     expect(e.data).not.toMatch(/\d/);
