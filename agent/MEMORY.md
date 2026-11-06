@@ -424,7 +424,9 @@ see that repo's own `now.md` for the current build state.
   *behaviour*, not markup a static tool can inspect) --- worth asking of any
   future live-updating page, not just this one: does the dynamic update
   have an accessible equivalent of the visual one, not just the first
-  render.
+  render. The converse also matters: a server push that re-sends an
+  *unchanged* value into a live region re-announces it, so send state to
+  each client only when that client's value changes.
 - `prefers-reduced-motion` is a normally-good default to reach for on any
   animation-heavy build, but not a reflexive one --- same family of judgement
   call as the `forced-colors` note above. On assignment-1's *Six As-Ifs*
