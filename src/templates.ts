@@ -113,6 +113,8 @@ const shell = (title: string, body: string): string => `<!doctype html>
       @keyframes arrive-dew { from { opacity: 0; } }
       @keyframes arrive-lightning { from { background: light-dark(#ffe9a8, #6b5a1e); } }
       .presence { color: light-dark(#595959, #999); font-size: 0.85rem; min-height: 1.4em; margin: 0 0 0.5rem; }
+      .paging { font-size: 0.9rem; margin: 1rem 0; }
+      .paging a { color: inherit; }
       .empty { color: light-dark(#595959, #999); font-style: italic; }
       pre.readme-body { white-space: pre-wrap; }
       .visually-hidden {
@@ -168,12 +170,16 @@ const liveScript = `
   const wall = document.querySelector("ul.wall");
   const presence = document.getElementById("presence");
   const form = document.querySelector("form.trace-form");
-  const source = new EventSource("/events?after=" + wall.dataset.after);
+  // an older page isn't the top of the wall: it hears presence, but new
+  // traces and live posting belong to the newest page
+  const archive = "archive" in wall.dataset;
+  const source = new EventSource(archive ? "/events" : "/events?after=" + wall.dataset.after);
   let live = false;
-  source.addEventListener("open", () => { live = true; });
+  source.addEventListener("open", () => { live = !archive; });
   source.addEventListener("error", () => { live = false; presence.textContent = ""; });
   source.addEventListener("presence", (e) => { presence.textContent = e.data; });
   source.addEventListener("trace", (e) => {
+    if (archive) return;
     if (document.getElementById("trace-" + e.lastEventId)) return;
     wall.querySelector(".empty")?.remove();
     wall.insertAdjacentHTML("afterbegin", JSON.parse(e.data));
@@ -196,7 +202,11 @@ const liveScript = `
   });
 `;
 
-export function renderWall(traces: Trace[], visitorId: string): string {
+export function renderWall(
+  traces: Trace[],
+  visitorId: string,
+  { archive = false, hasOlder = false }: { archive?: boolean; hasOlder?: boolean } = {},
+): string {
   const options = Object.entries(KIND_META)
     .map(([value, m]) => `<option value="${value}">${m.hanzi} ${escapeHtml(m.label)}</option>`)
     .join("");
@@ -204,6 +214,9 @@ export function renderWall(traces: Trace[], visitorId: string): string {
   const items = traces.length
     ? traces.map((t) => renderTrace(t, visitorId)).join("\n")
     : `<li class="empty">nothing has passed through yet</li>`;
+  const oldest = traces.at(-1)?.id;
+  const older = hasOlder && oldest ? `<p class="paging"><a href="/?before=${oldest}">older traces</a></p>` : "";
+  const newer = archive ? `<p class="paging"><a href="/">back to the newest</a></p>` : "";
 
   const body = `
     <header>
@@ -222,9 +235,11 @@ export function renderWall(traces: Trace[], visitorId: string): string {
         <button type="submit">let it go</button>
       </form>
       <p id="presence" class="presence" role="status"></p>
-      <ul class="wall" aria-live="polite" aria-relevant="additions" data-after="${traces[0]?.id ?? 0}">
+      ${newer}
+      <ul class="wall"${archive ? ` data-archive` : ` aria-live="polite" aria-relevant="additions" data-after="${traces[0]?.id ?? 0}"`}>
         ${items}
       </ul>
+      ${older}
     </main>
     <script type="module">${liveScript}</script>
   `;

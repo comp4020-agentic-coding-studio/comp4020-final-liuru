@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { marked } from "marked";
-import { addTrace, isKind, recentTraces, type Trace, tracesAfter } from "./db.ts";
+import { addTrace, isKind, recentTraces, type Trace, tracesAfter, tracesBefore } from "./db.ts";
 import { logEvent, logRequest, requestId, visitorTag } from "./log.ts";
 import { presenceText, renderReadme, renderTrace, renderWall } from "./templates.ts";
 
@@ -32,6 +32,8 @@ function parseCookies(header: string | undefined): Record<string, string> {
 // few KB. Without a cap, one oversized POST is buffered whole and can exhaust
 // the machine's 256 MB for everyone.
 const MAX_BODY = 8 * 1024;
+
+const PAGE = 200;
 
 class BodyTooLarge extends Error {}
 
@@ -123,7 +125,15 @@ const server = createServer(async (req, res) => {
 
   try {
     if (url.pathname === "/" && req.method === "GET") {
-      const html = renderWall(recentTraces(), visitorId);
+      // one page at a time, newest first; `before` walks further back, so a
+      // trace never falls off the end of the wall, it only moves down it
+      const before = Number(url.searchParams.get("before"));
+      const archive = Number.isInteger(before) && before > 0;
+      const page = archive ? tracesBefore(before, PAGE + 1) : recentTraces(PAGE + 1);
+      const html = renderWall(page.slice(0, PAGE), visitorId, {
+        archive,
+        hasOlder: page.length > PAGE,
+      });
       res.writeHead(200, {
         "content-type": "text/html; charset=utf-8",
         ...(setCookie ? { "set-cookie": setCookie } : {}),

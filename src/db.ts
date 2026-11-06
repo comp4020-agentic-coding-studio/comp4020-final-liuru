@@ -51,6 +51,15 @@ export function recentTraces(limit = 200): Trace[] {
   return selectRecent.all(limit) as Trace[];
 }
 
+const selectBefore = db.prepare(
+  "SELECT id, visitor_id AS visitorId, kind, text, created_at AS createdAt FROM traces WHERE id < ? ORDER BY id DESC LIMIT ?",
+);
+
+// Newest first, the same order as the wall: one page further back.
+export function tracesBefore(id: number, limit = 200): Trace[] {
+  return selectBefore.all(id, limit) as Trace[];
+}
+
 const selectAfter = db.prepare(
   "SELECT id, visitor_id AS visitorId, kind, text, created_at AS createdAt FROM traces WHERE id > ? ORDER BY id ASC LIMIT 200",
 );

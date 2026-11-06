@@ -16,7 +16,8 @@ not to build a profile of them.
 
 - No accounts, no login, no visible follower/reader counts (presence is
   three unnumbered states, see `docs/decisions/0002-*`), no algorithmic
-  ranking of the wall. The list is plain reverse-chronological, always.
+  ranking of the wall. The list is plain reverse-chronological, always, and paged rather
+  than truncated: nothing falls off the wall.
 - No feature that exists to bring someone back (streaks, notifications,
   unread badges). The wall doesn't chase anyone.
 - A trace is permanent once posted: no edit, no delete, no admin override.
@@ -42,7 +43,10 @@ character cap, an 8 KB request-body cap (one oversized POST must not exhaust
 the 256 MB machine), live delivery and reconnect replay over `/events`, presence
 that counts visitors not tabs and never shows a number, identity and
 authorisation (`spec/identity.test.ts`, decision record 0003), traces
-surviving a server restart (`spec/persist.test.ts`), and the two
+surviving a server restart (`spec/persist.test.ts`), every trace still
+reachable through "older traces" once the wall passes one 200-trace page
+(`spec/paging.test.ts`),
+and the two
 course-wide checks (`/` answers, `/readme/` publishes `README.md`). Everything else — whether the wall still feels like
 the six similes rather than a generic guestbook — is a judgement call, made
 here and revisited each crit, not something a test can catch.
