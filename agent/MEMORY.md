@@ -34,7 +34,7 @@ server-side authorisation and who-did-what logging (decision record 0003:
 a person is a server-issued cookie, logged as a hash of it; finished,
 `b369382`); crit 12 is
 studio finishing time, and `PROCESS.md` was rewritten for the A3 submission
-itself in `be57d7b` (stack case, workflow habits, harness corrections); `research-note.md` (COMP8020, `94d002f`) argues
+itself in `be57d7b` (stack case, workflow habits, harness corrections); crit-12 runs later added paging so nothing falls off the wall (`16526b3`); `research-note.md` (COMP8020, `94d002f`) argues
 recurring agent mistakes belong in checks, not prose. `README.md` runs 400--600 words, `PROCESS.md` 900--1100,
 and (COMP8020 only) a separate `research-note.md` runs 600--800 words
 arguing a broader position on agentic practice, not just this project ---
@@ -925,3 +925,9 @@ see that repo's own `now.md` for the current build state.
   `ORDER BY id ASC LIMIT 200` from cursor 0, so the *oldest* 200, which
   nobody wants. Any cursor-paged replay needs a separate decision for "no
   cursor at all", distinct from "cursor = 0".
+- In zsh, quote any URL containing `?` in a `curl` call: unquoted, the
+  glob fails with "no matches found" and the command never runs (a CI-poll
+  loop on `comp4020-final-liuru` spun for ten minutes on this).
+- A display cap (`LIMIT 200` on the main page) is a silent deletion for a
+  product that promises permanence. Check every `LIMIT` against README's
+  own promises, not just against performance.
