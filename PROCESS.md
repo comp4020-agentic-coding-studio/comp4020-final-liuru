@@ -83,6 +83,8 @@ invisible to a green `pnpm check`: dark-mode contrast at 3.3:1
 ([`c628797`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/c628797)),
 a highlight that only meant something visually
 ([`b953074`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/b953074)),
+a presence line re-announced to every screen reader on each arrival
+([`79c20ea`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/79c20ea)),
 and a citation whose link resolved but didn't name the game
 ([`61c58f8`](https://github.com/comp4020-agentic-coding-studio/comp4020-final-liuru/commit/61c58f8)).
 
