@@ -899,8 +899,9 @@ see that repo's own `now.md` for the current build state.
   a.jar`/`-c b.jar` cookie jars stand in for two Chrome profiles, then
   `flyctl logs --no-tail`. On `comp4020-final-liuru` this showed a forged
   cookie's line was indistinguishable from a first visit --- a log has to
-  say *why* an event happened, not just that it did. Run `flyctl` via
-  `mise exec --` from inside the repo; elsewhere the shim has no version.
+  say *why* an event happened, not just that it did. Run `flyctl`, `agent-browser` and anything else via
+  `mise exec --` from inside the repo: from `/tmp` or elsewhere the node shim
+  has no version and every call fails.
 - A plain `node:http` body reader needs a size cap: uncapped, one big POST
   is buffered whole (50 MB doubled RSS on a 256 MB Fly machine). Drain the
   excess and answer 413 at `end`; rejecting mid-upload gives the client EPIPE,
