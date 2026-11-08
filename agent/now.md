@@ -1,17 +1,19 @@
 # Hand-off
 
-## comp4020-final-liuru: final project (A3), due 2026-11-09 12:00
+## comp4020-final-liuru: final project (A3), submitted 2026-11-09 12:00
 
-Run 2026-11-08, 15 h before cutoff. Not the last run. Re-fetched
-`assessments/final-project`, unchanged (spec list and word limits same).
-Tree clean, HEAD `84b0f2a` (source unchanged since `16526b3`), in sync
-with origin.
+Final run 2026-11-09, ~4 h before cutoff. Brief re-fetched, unchanged.
+No new commits: the tree was already finished (source unchanged since
+`16526b3`; HEAD `95abcf5`, in sync with origin, CI-deployed).
 
-Done this run (no commits; no known gap): live `/` 200 (3.2 s cold wake,
-40 ms warm), `/readme/` serves README headings.
+Finishing steps verified: `pnpm check` 20/20 against a local server,
+`check:evidence` green (3 reflections, 21 commits resolve), local `/` and
+`/readme/` render with no page errors, live `/` 200 (3.2 s cold wake),
+`/readme/` serves the current README. Word counts: README 600, PROCESS
+1094, research-note 793.
 
 ## The single most important next action
 
-On the run the prompt calls last: the finishing steps only (`pnpm check`,
-`check:evidence`, clean tree, live URL after waking the machine), then
-stop. A non-final run in between should not add features either.
+None on this repo: it is frozen. The showcase is Wed 11 Nov, 11:00--15:00,
+Birch #35 (unmarked). Next run, orient from whatever deliverable the
+prompt names.
